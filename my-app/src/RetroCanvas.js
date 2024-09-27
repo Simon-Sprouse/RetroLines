@@ -4,9 +4,39 @@ function RetroCanvas() {
 
     const canvasRef = useRef(null);
 
-    const aPos = useRef({ x:100, y:100 });
+    const aPos = useRef({ x:1000, y:0 });
     const aDir = useRef("right");
     // const [direction, setDirection] = useState("Right");
+
+    const [colors, setColors] = useState([
+        '#AF2327', // Dark Red
+        '#F25C3C', // Orange-Red
+        '#F97C1E', // Orange
+        '#F9A31E', // Light Orange
+        '#FFD37C'  // Yellow
+    ]);
+
+
+    // const [colors, setColors] = useState([
+    //     '#A8DADC', // Soft Teal
+    //     '#F1FAEE', // Light Mint
+    //     '#F4A261', // Muted Apricot
+    //     '#2A9D8F', // Soft Green
+    //     '#264653'  // Deep Blue-Green
+    // ]);
+
+    // const [colors, setColors] = useState([
+    //     'tan', // Soft Teal
+    //     'tan', // Very Light Mint
+    //     'tan', // Muted Orange
+    //     'tan', // Deep Teal
+    //     'tan'  // Dark Slate Blue
+    // ]);
+
+    
+
+
+
 
 
     function drawLine(a, b, lineWidth, spacing, direction="left") {
@@ -14,14 +44,6 @@ function RetroCanvas() {
         const ctx = canvas.getContext('2d');
 
         ctx.lineWidth = lineWidth;
-
-        const colors = [
-            '#AF2327', // Dark Red
-            '#F25C3C', // Orange-Red
-            '#F97C1E', // Orange
-            '#F9A31E', // Light Orange
-            '#FFD37C'  // Yellow
-        ];
 
 
         if (direction == "right") { 
@@ -105,14 +127,7 @@ function RetroCanvas() {
 
         ctx.lineWidth = lineWidth;
 
-        const colors = [
-            '#AF2327', // Dark Red
-            '#F25C3C', // Orange-Red
-            '#F97C1E', // Orange
-            '#F9A31E', // Light Orange
-            '#FFD37C'  // Yellow
-        ];
-
+ 
         if (direction == "r2d") { 
             colors.forEach((color, index) => { 
                 ctx.beginPath();
@@ -289,25 +304,34 @@ function RetroCanvas() {
         
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "lightgrey";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 
+        function handleResize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
         
+        handleResize();
+
+        window.addEventListener("resize", handleResize);
+        
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        }
 
     }, []);
 
     function test() { 
 
         const radius = 30;
-        const lineWidth = 30;
+        const lineWidth = 20;
         const spacing = 100;
 
 
-        aPos.current = {x: 400, y: 400};
-        aDir.current = "right";
         
-        for (let i = 0; i < 400; i ++){
+        for (let i = 0; i < 40; i ++){
 
             let path = Math.round(Math.random());
 
@@ -390,14 +414,57 @@ function RetroCanvas() {
         // drawLine(aPos.current, pointD, 20, 100, "down");
         // drawLine(aPos.current, pointC, 20, 100, "left");
         // drawLine(aPos.current, pointA, 20, 100, "up");
+
+        if (aDir.current == "down") { 
+            const finalPoint = {x: aPos.current.x, y: canvasRef.current.height};
+            drawLine(aPos.current, finalPoint, lineWidth, spacing, "down");
+        }
+        else if (aDir.current == "up") { 
+            const finalPoint = {x: aPos.current.x, y: 0};
+            drawLine(aPos.current, finalPoint, lineWidth, spacing, "up");
+        }
+        else if (aDir.current == "left") { 
+            const finalPoint = {x: 0, y: aPos.current.y};
+            drawLine(aPos.current, finalPoint, lineWidth, spacing, "left");
+        }
+        else if (aDir.current == "right") { 
+            const finalPoint = {x: canvasRef.current.width, y: aPos.current.y};
+            drawLine(aPos.current, finalPoint, lineWidth, spacing, "right");
+        }
+        
+
         
         
     }
 
+    useEffect(() => { 
+
+        function handleKeyDown(event) {
+            if (event.key == "Enter") { 
+                test();
+            }
+            else if (event.key == " ") { 
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "beige";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => { 
+            document.removeEventListener("keydown", handleKeyDown);
+        }
+    })
+
+    
+
     return (
         <>
             <canvas ref={canvasRef} height='1000' width='2000'></canvas>
-            <button onClick={test}>Test</button>
+            {/* <button onClick={test}>Test</button> */}
         </>
     )
 }
