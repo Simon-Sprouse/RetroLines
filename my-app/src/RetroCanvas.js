@@ -155,24 +155,128 @@ function RetroCanvas() {
             aDir.current = "left";
         }
         else if (direction == "l2u") { 
-
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x;
+                const startY = a.y - index * (spacing / (colors.length - 1));
+    
+                const endX = a.x - radius - (colors.length - 1 - index) * (spacing / (colors.length - 1));
+                const endY = a.y - radius - spacing;
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(endX, startY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x - spacing - radius, y: a.y - spacing - radius};
+            aDir.current = "up";
         }
         else if (direction == "u2r") { 
-
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x + index * (spacing / (colors.length - 1));
+                const startY = a.y;
+    
+                const endX = a.x + radius + spacing;
+                const endY = a.y - radius - (colors.length - 1 - index) * (spacing / (colors.length - 1));
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(startX, endY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x + spacing + radius, y: a.y - spacing - radius};
+            aDir.current = "right";
         }
 
 
         else if (direction == "u2l"){ 
-
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x + index * (spacing / (colors.length - 1));
+                const startY = a.y;
+    
+                const endX = a.x - radius;
+                const endY = a.y - radius - index * (spacing / (colors.length - 1));
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(startX, endY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x - radius, y: a.y - radius};
+            aDir.current = "left";
         }
         else if (direction == "l2d") { 
-
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x;
+                const startY = a.y - index * (spacing / (colors.length - 1));
+    
+                const endX = a.x - radius - index * (spacing / (colors.length - 1));
+                const endY = a.y + radius;
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(endX, startY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x - radius, y: a.y + radius};
+            aDir.current = "down";
         }
         else if (direction == "d2r") { 
 
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x - index * (spacing / (colors.length - 1));
+                const startY = a.y;
+    
+                const endX = a.x + radius;
+                const endY = a.y + radius + index * (spacing / (colors.length - 1));
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(startX, endY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x + radius, y: a.y + radius};
+            aDir.current = "right";
+
         }
         else if (direction == "r2u") { 
-
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x;
+                const startY = a.y + index * (spacing / (colors.length - 1));
+    
+                const endX = a.x + radius + index * (spacing / (colors.length - 1));
+                const endY = a.y - radius;
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(endX, startY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x + radius, y: a.y - radius};
+            aDir.current = "up";
         }
 
 
@@ -195,15 +299,49 @@ function RetroCanvas() {
 
     function test() { 
         const pointA = { x:100, y:100 };
-        const pointB = { x:700, y:100 };
-        const pointC = { x:100, y:400 };
-        const pointD = { x:700, y:400 };
+        const pointB = { x:1000, y:100 };
+        const pointC = { x:500, y:600 };
+        const pointD = { x:1000, y:600 };
+        const pointE = { x:500, y:600 };
+        const pointF = { x:800, y:600 };
+        const pointG = { x:800, y:400 };
+        const pointH = { x:150, y:400 };
+        const pointI = { x:150, y:650 };
+        const pointJ = { x:200, y:650 };
+        const pointK = { x:200, y:450 };
         
         drawLine(aPos.current, pointB, 20, 100, "right");
         drawArc(aPos.current, 30, 20, 100, "r2d");
         drawLine(aPos.current, pointD, 20, 100, "down");
 
         drawArc(aPos.current, 30, 20, 100, "d2l")
+        drawLine(aPos.current, pointC, 20, 100, "left");
+
+        drawArc(aPos.current, 30, 20, 100, "l2u");
+        drawLine(aPos.current, pointE, 20, 100, "up");
+
+        drawArc(aPos.current, 30, 20, 100, "u2r");
+        drawLine(aPos.current, pointF, 20, 100, "right");
+
+        drawArc(aPos.current, 30, 20, 100, "r2u");
+        drawLine(aPos.current, pointG, 20, 100, "up");
+
+        drawArc(aPos.current, 30, 20, 100, "u2l");
+        drawLine(aPos.current, pointH, 20, 100, "left");
+
+        drawArc(aPos.current, 30, 20, 100, "l2d");
+        drawLine(aPos.current, pointI, 20, 100, "down");
+
+        drawArc(aPos.current, 30, 20, 100, "d2r");
+        drawLine(aPos.current, pointJ, 20, 100, "right");
+
+        drawArc(aPos.current, 30, 20, 100, "r2u");
+        drawLine(aPos.current, pointK, 20, 100, "up");
+
+        // drawArc(aPos.current, 20, 20, 100, "u2l");
+        // drawLine(aPos.current, pointG, 20, 100, "")
+
+        // drawLine(aPos.current, )
 
         // drawLine(aPos.current, pointB, 20, 100, "right");
         // drawLine(aPos.current, pointD, 20, 100, "down");
