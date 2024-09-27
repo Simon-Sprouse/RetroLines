@@ -298,45 +298,88 @@ function RetroCanvas() {
     }, []);
 
     function test() { 
-        const pointA = { x:100, y:100 };
-        const pointB = { x:1000, y:100 };
-        const pointC = { x:500, y:600 };
-        const pointD = { x:1000, y:600 };
-        const pointE = { x:500, y:600 };
-        const pointF = { x:800, y:600 };
-        const pointG = { x:800, y:400 };
-        const pointH = { x:150, y:400 };
-        const pointI = { x:150, y:650 };
-        const pointJ = { x:200, y:650 };
-        const pointK = { x:200, y:450 };
+
+        const radius = 30;
+        const lineWidth = 30;
+        const spacing = 100;
+
+
+        aPos.current = {x: 400, y: 400};
+        aDir.current = "right";
         
-        drawLine(aPos.current, pointB, 20, 100, "right");
-        drawArc(aPos.current, 30, 20, 100, "r2d");
-        drawLine(aPos.current, pointD, 20, 100, "down");
+        for (let i = 0; i < 400; i ++){
 
-        drawArc(aPos.current, 30, 20, 100, "d2l")
-        drawLine(aPos.current, pointC, 20, 100, "left");
+            let path = Math.round(Math.random());
 
-        drawArc(aPos.current, 30, 20, 100, "l2u");
-        drawLine(aPos.current, pointE, 20, 100, "up");
+            if (aDir.current == "down") { 
 
-        drawArc(aPos.current, 30, 20, 100, "u2r");
-        drawLine(aPos.current, pointF, 20, 100, "right");
+                if (path == 0) { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "d2l");
+                    const newX = Math.round(Math.random() * aPos.current.x);
+                    const newY = aPos.current.y;
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "left");
+                }
+                else { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "d2r");
+                    const newX = aPos.current.x + Math.round(Math.random() * (canvasRef.current.width - aPos.current.x));
+                    const newY = aPos.current.y;
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "right");
+                }
+            }
+            else if (aDir.current == "left") { 
 
-        drawArc(aPos.current, 30, 20, 100, "r2u");
-        drawLine(aPos.current, pointG, 20, 100, "up");
 
-        drawArc(aPos.current, 30, 20, 100, "u2l");
-        drawLine(aPos.current, pointH, 20, 100, "left");
+                if (path == 0) { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "l2u");
+                    const newX = aPos.current.x
+                    const newY = Math.round(Math.random() * aPos.current.y);
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "up");
+                }
+                else { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "l2d");
+                    const newX = aPos.current.x;
+                    const newY = aPos.current.y + Math.round(Math.random() * (canvasRef.current.height - aPos.current.y));
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "down");
+                }
 
-        drawArc(aPos.current, 30, 20, 100, "l2d");
-        drawLine(aPos.current, pointI, 20, 100, "down");
-
-        drawArc(aPos.current, 30, 20, 100, "d2r");
-        drawLine(aPos.current, pointJ, 20, 100, "right");
-
-        drawArc(aPos.current, 30, 20, 100, "r2u");
-        drawLine(aPos.current, pointK, 20, 100, "up");
+            }
+            else if (aDir.current == "up") { 
+                if (path == 0) { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "u2l");
+                    const newX = Math.round(Math.random() * aPos.current.x);
+                    const newY = aPos.current.y;
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "left");
+                }
+                else { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "u2r");
+                    const newX = aPos.current.x + Math.round(Math.random() * (canvasRef.current.width - aPos.current.x));
+                    const newY = aPos.current.y;
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "right");
+                }
+            }
+            else if (aDir.current == "right") { 
+                if (path == 0) { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "r2u");
+                    const newX = aPos.current.x
+                    const newY = Math.round(Math.random() * aPos.current.y);
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "up");
+                }
+                else { 
+                    drawArc(aPos.current, radius, lineWidth, spacing, "r2d");
+                    const newX = aPos.current.x;
+                    const newY = aPos.current.y + Math.round(Math.random() * (canvasRef.current.height - aPos.current.y));
+                    const newPoint = {x:newX, y:newY};
+                    drawLine(aPos.current, newPoint, lineWidth, spacing, "down");
+                }
+            }
+        }
 
         // drawArc(aPos.current, 20, 20, 100, "u2l");
         // drawLine(aPos.current, pointG, 20, 100, "")
@@ -353,7 +396,7 @@ function RetroCanvas() {
 
     return (
         <>
-            <canvas ref={canvasRef} height='800' width='1200'></canvas>
+            <canvas ref={canvasRef} height='1000' width='2000'></canvas>
             <button onClick={test}>Test</button>
         </>
     )
