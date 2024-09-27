@@ -5,7 +5,7 @@ function RetroCanvas() {
     const canvasRef = useRef(null);
 
     const aPos = useRef({ x:100, y:100 });
-
+    const aDir = useRef("right");
     // const [direction, setDirection] = useState("Right");
 
 
@@ -24,7 +24,7 @@ function RetroCanvas() {
         ];
 
 
-        if (direction == "left") { 
+        if (direction == "right") { 
             colors.forEach((color, index) => { 
                 ctx.beginPath();
                 ctx.strokeStyle = color;
@@ -37,8 +37,9 @@ function RetroCanvas() {
                 ctx.stroke();
             });
             aPos.current = {x: b.x, y: a.y};
+            aDir.current = "right"
         }
-        else if (direction == "right") { 
+        else if (direction == "left") { 
             colors.forEach((color, index) => { 
                 ctx.beginPath();
                 ctx.strokeStyle = color;
@@ -51,6 +52,7 @@ function RetroCanvas() {
                 ctx.stroke();
             });
             aPos.current = {x:b.x , y: a.y};
+            aDir.current = "left"
         }
         else if (direction == "up") { 
 
@@ -68,9 +70,10 @@ function RetroCanvas() {
 
 
             aPos.current = {x:a.x , y: b.y};
+            aDir.current = "up";
         }
         else if (direction == "down") { 
-            aPos.current = {x:a.x , y: b.y};
+            
 
             colors.forEach((color, index) => { 
                 ctx.beginPath();
@@ -83,17 +86,19 @@ function RetroCanvas() {
 
                 ctx.stroke();
             });
+
+            aPos.current = {x:a.x , y: b.y};
+            aDir.current = "down";
         }
 
 
         
-
         
 
     };
 
 
-    function drawArc(a, radius, lineWidth, spacing) { 
+    function drawArc(a, radius, lineWidth, spacing, direction="r2d") { 
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -108,25 +113,70 @@ function RetroCanvas() {
             '#FFD37C'  // Yellow
         ];
 
-        colors.forEach((color, index) => { 
-            ctx.beginPath();
-            ctx.strokeStyle = color;
+        if (direction == "r2d") { 
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x;
+                const startY = a.y + index * (spacing / (colors.length - 1));
+    
+                const endX = a.x + radius + (colors.length - 1 - index) * (spacing / (colors.length - 1));
+                const endY = a.y + radius + spacing;
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(endX, startY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x + spacing + radius, y: a.y + spacing + radius};
+            aDir.current = "down";
+        }
 
-            const startX = a.x;
-            const startY = a.y + index * (spacing / (colors.length - 1));
+        else if (direction == "d2l") {
+            colors.forEach((color, index) => { 
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+    
+                const startX = a.x - index * (spacing / (colors.length - 1));
+                const startY = a.y;
+    
+                const endX = a.x - radius - spacing;
+                const endY = a.y + radius + (colors.length - 1 - index) * (spacing / (colors.length - 1));
+    
+                ctx.moveTo(startX, startY);
+    
+                ctx.arcTo(startX, endY, endX, endY, Math.abs(startY - endY));
+    
+                ctx.stroke();
+            });
+            aPos.current = {x: a.x - spacing - radius, y: a.y + spacing + radius};
+            aDir.current = "left";
+        }
+        else if (direction == "l2u") { 
 
-            const endX = a.x + radius + (colors.length - 1 - index) * (spacing / (colors.length - 1));
-            const endY = a.y + radius + spacing;
+        }
+        else if (direction == "u2r") { 
 
-            ctx.moveTo(startX, startY);
-            // ctx.lineTo(endX, endY);
-
-
-            ctx.arcTo(endX, startY, endX, endY, Math.abs(startY - endY));
+        }
 
 
-            ctx.stroke();
-        })
+        else if (direction == "u2l"){ 
+
+        }
+        else if (direction == "l2d") { 
+
+        }
+        else if (direction == "d2r") { 
+
+        }
+        else if (direction == "r2u") { 
+
+        }
+
+
+        
 
 
     }
@@ -148,14 +198,18 @@ function RetroCanvas() {
         const pointB = { x:700, y:100 };
         const pointC = { x:100, y:400 };
         const pointD = { x:700, y:400 };
-        drawLine(pointA, pointB, 10, 100);
-        // drawLine(pointB, pointC, 10, 100);
-        // drawArc(pointB, 30, 10, 100);
+        
+        drawLine(aPos.current, pointB, 20, 100, "right");
+        drawArc(aPos.current, 30, 20, 100, "r2d");
+        drawLine(aPos.current, pointD, 20, 100, "down");
 
+        drawArc(aPos.current, 30, 20, 100, "d2l")
 
-        drawLine(pointC, pointD, 10, 100, "right");
-        drawLine(pointA, pointC, 10, 100, "up");
-        drawLine(pointD, pointB, 10, 100, "down");
+        // drawLine(aPos.current, pointB, 20, 100, "right");
+        // drawLine(aPos.current, pointD, 20, 100, "down");
+        // drawLine(aPos.current, pointC, 20, 100, "left");
+        // drawLine(aPos.current, pointA, 20, 100, "up");
+        
         
     }
 
