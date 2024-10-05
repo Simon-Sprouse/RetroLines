@@ -6,7 +6,7 @@ function RetroCanvas() {
 
     const aPos = useRef({ x:1000, y:0 });
     const aDir = useRef("right");
-    // const [direction, setDirection] = useState("Right");
+
 
     const [colors, setColors] = useState([
         '#AF2327', // Dark Red
@@ -16,22 +16,6 @@ function RetroCanvas() {
         '#FFD37C'  // Yellow
     ]);
 
-
-    // const [colors, setColors] = useState([
-    //     '#A8DADC', // Soft Teal
-    //     '#F1FAEE', // Light Mint
-    //     '#F4A261', // Muted Apricot
-    //     '#2A9D8F', // Soft Green
-    //     '#264653'  // Deep Blue-Green
-    // ]);
-
-    // const [colors, setColors] = useState([
-    //     'tan', // Soft Teal
-    //     'tan', // Very Light Mint
-    //     'tan', // Muted Orange
-    //     'tan', // Deep Teal
-    //     'tan'  // Dark Slate Blue
-    // ]);
 
     
 
@@ -438,57 +422,7 @@ function RetroCanvas() {
     }
 
 
-    function snake() { 
 
-        console.log("snak3")
-        const radius = 30;
-        const lineWidth = 20;
-        const spacing = 100;
-
-        aPos.current = {x: Math.round(Math.random() * canvasRef.current.width), y: 0};
-        aDir.current = "down";
-
-        const firstPoint = {x: aPos.current.x, y: 100};
-
-        drawLine(aPos.current, firstPoint, lineWidth, spacing, "down");
-
-        const path = Math.round(Math.random());
-
-        if (path == 0) {
-            drawArc(aPos.current, radius, lineWidth, spacing, "d2l");
-        }
-        else { 
-            drawArc(aPos.current, radius, lineWidth, spacing, "d2r");
-        }
-        
-
-
-        for (let i = 0; i < 10; i ++ ) { 
-
-            if (aDir.current == "left") { 
-                drawArc(aPos.current, radius, lineWidth, spacing, "l2d");
-                drawArc(aPos.current, radius, lineWidth, spacing, "d2r");
-
-                const newX = aPos.current.x + Math.round(Math.random() * (canvasRef.current.width - aPos.current.x));
-                const newY = aPos.current.y;
-                const newPoint = {x:newX, y:newY};
-                drawLine(aPos.current, newPoint, lineWidth, spacing, "right");
-            }
-            else if (aDir.current == "right") {
-                drawArc(aPos.current, radius, lineWidth, spacing, "r2d");
-                drawArc(aPos.current, radius, lineWidth, spacing, "d2l");
-
-                const newX = Math.round(Math.random() *  aPos.current.x);
-                const newY = aPos.current.y;
-                const newPoint = {x:newX, y:newY};
-                drawLine(aPos.current, newPoint, lineWidth, spacing, "left");
-            }
-
-
-        }
-
-
-    }
 
     useEffect(() => { 
 
@@ -498,9 +432,6 @@ function RetroCanvas() {
 
             if (event.key == "Enter") { 
                 test();
-            }
-            else if (event.key == "s") { 
-                snake();
             }
             else if (event.key == " ") { 
                 const canvas = canvasRef.current;

@@ -1,11 +1,11 @@
 import './App.css';
-import RetroCanvas from './RetroCanvas';
+import Controller from './Controller';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <RetroCanvas />
+        <Controller />
       </header>
     </div>
   );
