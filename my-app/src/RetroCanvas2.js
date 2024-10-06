@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 function RetroCanvas2() { 
 
 
-    const lineWidth = 20;
+    const lineWidth = 30;
     const spacing = 100;
 
 
@@ -13,8 +13,8 @@ function RetroCanvas2() {
     const aRef = useRef({ x:400, y:200 });
 
     const bRef = useRef({ 
-        x: 400 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
-        y: 200 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
+        x: 400 + Math.round(Math.cos(Math.PI * 4 / 8) * spacing),
+        y: 200 + Math.round(Math.sin(Math.PI * 4 / 8) * spacing),
     });
 
 
@@ -53,7 +53,7 @@ function RetroCanvas2() {
     }
 
 
-    function drawLine(length) {
+    function drawLine(length, updatePoints=false) {
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -76,13 +76,19 @@ function RetroCanvas2() {
             y: length * (a.x - b.x) / lengthAB,
         };
 
+        // silly trick to prevent border drawing (thanks web browser!! (ಠ_ಠ))
+        const d2 = {
+            x: (length + 1) * (b.y - a.y) / lengthAB,
+            y: (length + 1) * (a.x - b.x) / lengthAB,
+        };
+
         colors.forEach((color, index) => { 
             
             const startX = a.x + (index / (colors.length - 1)) * ab.x;
             const startY = a.y + (index / (colors.length - 1)) * ab.y;
 
-            const endX = a.x + d.x + (index / (colors.length - 1)) * ab.x;
-            const endY = a.y + d.y + (index / (colors.length - 1)) * ab.y;
+            const endX = a.x + d2.x + (index / (colors.length - 1)) * ab.x;
+            const endY = a.y + d2.y + (index / (colors.length - 1)) * ab.y;
 
             ctx.beginPath();
             ctx.strokeStyle = color;
@@ -92,16 +98,20 @@ function RetroCanvas2() {
 
         })
 
-        aRef.current = {
-            x: a.x + d.x,
-            y: a.y + d.y,
-        };
+        // true when animation is over
+        if (updatePoints == true) { 
+            aRef.current = {
+                x: a.x + d.x,
+                y: a.y + d.y,
+            };
+    
+            bRef.current = {
+                x: a.x + d.x + ab.x,
+                y: a.y + d.y + ab.y,
+            };
+        }
 
-        bRef.current = {
-            x: a.x + d.x + ab.x,
-            y: a.y + d.y + ab.y,
-        };
-        
+ 
 
     };
 
@@ -127,22 +137,50 @@ function RetroCanvas2() {
 
     }, []);
 
-    function test() { 
+
+    function runAnimateLine(length) { 
+        let animationLength = 0;
+
+        return new Promise((resolve) => { 
+            function animateLine() { 
+                if (animationLength < length) { 
+                    animationLength += 40;
+                    drawLine(animationLength);
+                    requestAnimationFrame(animateLine);
+                }
+                else { 
+                    drawLine(length, true);
+                    resolve();
+                }
+            }
+            animateLine();
+        })
+        
+    }
+
+    async function test() { 
 
         let a = aRef.current;
         let b = bRef.current;
 
-        drawCircle(a.x, a.y, 10, "red");
-        drawCircle(b.x, b.y, 10, "blue");
+        // drawCircle(a.x, a.y, 10, "red");
+        // drawCircle(b.x, b.y, 10, "blue");
 
-        drawLine(1000);
+        // drawLine(1000);
 
-        a = aRef.current;
-        b = bRef.current;
+        // a = aRef.current;
+        // b = bRef.current;
 
-        drawCircle(a.x, a.y, 10, "red");
-        drawCircle(b.x, b.y, 10, "blue");
+        // drawCircle(a.x, a.y, 10, "red");
+        // drawCircle(b.x, b.y, 10, "blue");
 
+
+
+        
+
+        for (let i = 0; i < 10; i++) { 
+            await runAnimateLine(100);
+        }
 
        
     }
@@ -159,6 +197,9 @@ function RetroCanvas2() {
             }
             else if (event.key === " ") { 
                 resetBackground();
+            }
+            else if (event.key === "r") { 
+                window.location.reload();
             }
         }
 
