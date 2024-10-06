@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 function RetroCanvas2() { 
 
 
-    const lineWidth = 30;
+    const lineWidth = 20;
     const spacing = 100;
 
 
@@ -13,8 +13,8 @@ function RetroCanvas2() {
     const aRef = useRef({ x:400, y:200 });
 
     const bRef = useRef({ 
-        x: 400 + Math.round(Math.cos(Math.PI * 4 / 8) * spacing),
-        y: 200 + Math.round(Math.sin(Math.PI * 4 / 8) * spacing),
+        x: 400 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
+        y: 200 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
     });
 
 
@@ -53,7 +53,7 @@ function RetroCanvas2() {
     }
 
 
-    function drawLine(length, updatePoints=false) {
+    function drawLine(length, updatePoints=true) {
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -116,6 +116,50 @@ function RetroCanvas2() {
     };
 
 
+    function drawArc(rotation, radius) { 
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+        ctx.lineWidth = lineWidth;
+
+        const a = aRef.current;
+        const b = bRef.current;
+
+        const startingAngle = Math.atan2(b.y - a.y, b.x - a.x);
+
+        console.log("Starting angle: ", startingAngle * (360 / Math.PI));
+
+        const h = radius + spacing;
+
+
+        const centerX = a.x + h * Math.cos(Math.PI * 2 - startingAngle);
+        const centerY = a.y - h * Math.sin(Math.PI * 2 - startingAngle);
+
+        colors.forEach((color, index) => { 
+
+            const r = radius + (colors.length - index - 1) / (colors.length - 1) * spacing
+
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            // ctx.moveTo(a.x, a.y);
+            ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
+            ctx.stroke();
+        })
+        
+
+
+    }
+
+
+
+
+
+
+
+
+
+
 
 
     useEffect(() => {
@@ -145,7 +189,7 @@ function RetroCanvas2() {
             function animateLine() { 
                 if (animationLength < length) { 
                     animationLength += 40;
-                    drawLine(animationLength);
+                    drawLine(animationLength, false);
                     requestAnimationFrame(animateLine);
                 }
                 else { 
@@ -163,24 +207,27 @@ function RetroCanvas2() {
         let a = aRef.current;
         let b = bRef.current;
 
-        // drawCircle(a.x, a.y, 10, "red");
-        // drawCircle(b.x, b.y, 10, "blue");
+        drawCircle(a.x, a.y, 10, "red");
+        drawCircle(b.x, b.y, 10, "blue");
 
-        // drawLine(1000);
+        drawLine(1000);
 
-        // a = aRef.current;
-        // b = bRef.current;
+        a = aRef.current;
+        b = bRef.current;
 
-        // drawCircle(a.x, a.y, 10, "red");
-        // drawCircle(b.x, b.y, 10, "blue");
+        drawCircle(a.x, a.y, 10, "red");
+        drawCircle(b.x, b.y, 10, "blue");
+
+
+        drawArc(Math.PI * 3 / 2, 30);
 
 
 
         
 
-        for (let i = 0; i < 10; i++) { 
-            await runAnimateLine(100);
-        }
+        // for (let i = 0; i < 10; i++) { 
+        //     await runAnimateLine(100);
+        // }
 
        
     }
