@@ -3,18 +3,23 @@ import React, { useState, useRef, useEffect } from 'react';
 function RetroCanvas2() { 
 
 
-    const lineWidth = 20;
+    const lineWidth = 30;
     const spacing = 100;
+
+    const radius = 30;
+
+    const arcAnimationSpeed = 40;
+    const lineAnimationSpeed = 40;
 
 
 
     const canvasRef = useRef(null);
 
-    const aRef = useRef({ x:400, y:200 });
+    const aRef = useRef({ x:1000, y:600 });
 
     const bRef = useRef({ 
-        x: 400 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
-        y: 200 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 16) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 16) * spacing),
     });
 
 
@@ -47,6 +52,11 @@ function RetroCanvas2() {
         ctx.fillStyle = "#572800";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+
+
+
+
+
 
     function distance(a, b) { 
         return Math.sqrt((b.x - a.x)**2 + (b.y - a.y)**2);
@@ -99,7 +109,7 @@ function RetroCanvas2() {
         })
 
         // true when animation is over
-        if (updatePoints == true) { 
+        if (updatePoints === true) { 
             aRef.current = {
                 x: a.x + d.x,
                 y: a.y + d.y,
@@ -114,6 +124,31 @@ function RetroCanvas2() {
  
 
     };
+
+    function runLine(length) { 
+        let animationLength = 0;
+
+        return new Promise((resolve) => { 
+            function animateLine() { 
+                if (animationLength + lineAnimationSpeed < length) { 
+                    animationLength += lineAnimationSpeed;
+                    drawLine(animationLength, false);
+                    requestAnimationFrame(animateLine);
+                }
+                else { 
+                    drawLine(length, true);
+                    resolve();
+                }
+            }
+            animateLine();
+        })
+        
+    }
+
+
+
+
+
 
     function findPointAfterRotation(centerX, centerY, outerX, outerY, rotation) { 
         const xRelative = outerX - centerX;
@@ -131,7 +166,7 @@ function RetroCanvas2() {
     }
 
 
-    function drawArc(rotation, radius) { 
+    function drawArc(rotation, updatePoints=true) { 
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
@@ -142,14 +177,6 @@ function RetroCanvas2() {
         const b = bRef.current;
 
         const startingAngle = Math.atan2(b.y - a.y, b.x - a.x);
-
-        console.log("Starting angle: ", startingAngle * (360 / Math.PI));
-
-        
-
-
-        
-
 
         if (rotation >= 0) { 
 
@@ -168,8 +195,11 @@ function RetroCanvas2() {
                 ctx.stroke();
             })
 
-            aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
-            bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+            if (updatePoints === true) { 
+                aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
+                bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+            }
+
 
         }
         else if (rotation < 0) { 
@@ -177,6 +207,8 @@ function RetroCanvas2() {
             const h = radius;
             const centerX = a.x - h * Math.cos(Math.PI * 2 - startingAngle);
             const centerY = a.y + h * Math.sin(Math.PI * 2 - startingAngle);
+
+            // drawCircle(centerX, centerY, radius / 2, "cyan");
 
             colors.forEach((color, index) => { 
                 
@@ -189,15 +221,57 @@ function RetroCanvas2() {
                 ctx.stroke();
             })
 
-            aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
-            bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+            if (updatePoints === true) { 
+                aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
+                bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+            }
 
+        }
+
+    }
+
+    function degreesToRadians(degrees) { 
+        return degrees * (Math.PI / 180);
+    }
+
+    function runArc(rotation) { 
+        let animationRotation = 0;
+
+        if (rotation >= 0) { 
+            return new Promise((resolve) => { 
+                function animateArc() { 
+                    if (animationRotation + arcAnimationSpeed < rotation) { 
+                        animationRotation += arcAnimationSpeed;
+                        drawArc(degreesToRadians(animationRotation), false);
+                        requestAnimationFrame(animateArc);
+                    }
+                    else { 
+                        drawArc(degreesToRadians(rotation), true);
+                        resolve();
+                    }
+                }
+                animateArc();
+            })
+        }
+        else if (rotation < 0) { 
+            return new Promise((resolve) => { 
+                function animateArc() { 
+                    if (animationRotation - arcAnimationSpeed > rotation) { 
+                        animationRotation -= arcAnimationSpeed;
+                        drawArc(degreesToRadians(animationRotation), false);
+                        requestAnimationFrame(animateArc);
+                    }
+                    else { 
+                        drawArc(degreesToRadians(rotation), true);
+                        resolve();
+                    }
+                }
+                animateArc();
+            })
         }
 
         
         
-
-
     }
 
 
@@ -231,58 +305,23 @@ function RetroCanvas2() {
     }, []);
 
 
-    function runAnimateLine(length) { 
-        let animationLength = 0;
 
-        return new Promise((resolve) => { 
-            function animateLine() { 
-                if (animationLength < length) { 
-                    animationLength += 40;
-                    drawLine(animationLength, false);
-                    requestAnimationFrame(animateLine);
-                }
-                else { 
-                    drawLine(length, true);
-                    resolve();
-                }
-            }
-            animateLine();
-        })
-        
-    }
 
     async function test() { 
 
-        let a = aRef.current;
-        let b = bRef.current;
 
-        drawCircle(a.x, a.y, 10, "red");
-        drawCircle(b.x, b.y, 10, "blue");
-
-        drawLine(1000);
-
-        a = aRef.current;
-        b = bRef.current;
-
-        drawCircle(a.x, a.y, 10, "red");
-        drawCircle(b.x, b.y, 10, "blue");
-
-
-        drawArc(Math.PI * -3 / 2, 30);
-
-        a = aRef.current;
-        b = bRef.current;
-
-        drawCircle(a.x, a.y, 10, "red");
-        drawCircle(b.x, b.y, 10, "blue");
-
+        const n = 4;
+        for (let i = 0; i < n; i++ ) { 
+            await runLine(400);
+            await runArc((360/n) - 360);
+            await runLine(400);
+        }
 
 
         
 
-        // for (let i = 0; i < 10; i++) { 
-        //     await runAnimateLine(100);
-        // }
+        
+
 
        
     }
