@@ -115,6 +115,21 @@ function RetroCanvas2() {
 
     };
 
+    function findPointAfterRotation(centerX, centerY, outerX, outerY, rotation) { 
+        const xRelative = outerX - centerX;
+        const yRelative = outerY - centerY;
+
+        const xNew = xRelative * Math.cos(rotation) - yRelative * Math.sin(rotation);
+        const yNew = xRelative * Math.sin(rotation) + yRelative * Math.cos(rotation);
+
+        const newPoint = {
+            x: centerX + xNew,
+            y: centerY + yNew,
+        };
+
+        return newPoint;
+    }
+
 
     function drawArc(rotation, radius) { 
 
@@ -130,22 +145,56 @@ function RetroCanvas2() {
 
         console.log("Starting angle: ", startingAngle * (360 / Math.PI));
 
-        const h = radius + spacing;
+        
 
 
-        const centerX = a.x + h * Math.cos(Math.PI * 2 - startingAngle);
-        const centerY = a.y - h * Math.sin(Math.PI * 2 - startingAngle);
+        
 
-        colors.forEach((color, index) => { 
 
-            const r = radius + (colors.length - index - 1) / (colors.length - 1) * spacing
+        if (rotation >= 0) { 
 
-            ctx.beginPath();
-            ctx.strokeStyle = color;
-            // ctx.moveTo(a.x, a.y);
-            ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
-            ctx.stroke();
-        })
+            const h = radius + spacing;
+            const centerX = a.x + h * Math.cos(Math.PI * 2 - startingAngle);
+            const centerY = a.y - h * Math.sin(Math.PI * 2 - startingAngle);
+
+            colors.forEach((color, index) => { 
+
+                const r = radius + (colors.length - index - 1) / (colors.length - 1) * spacing
+    
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                // ctx.moveTo(a.x, a.y);
+                ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
+                ctx.stroke();
+            })
+
+            aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
+            bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+
+        }
+        else if (rotation < 0) { 
+
+            const h = radius;
+            const centerX = a.x - h * Math.cos(Math.PI * 2 - startingAngle);
+            const centerY = a.y + h * Math.sin(Math.PI * 2 - startingAngle);
+
+            colors.forEach((color, index) => { 
+                
+                const r = radius + (index / (colors.length - 1)) * spacing;
+
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                // ctx.moveTo(a.x, a.y);
+                ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
+                ctx.stroke();
+            })
+
+            aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
+            bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+
+        }
+
+        
         
 
 
@@ -219,7 +268,13 @@ function RetroCanvas2() {
         drawCircle(b.x, b.y, 10, "blue");
 
 
-        drawArc(Math.PI * 3 / 2, 30);
+        drawArc(Math.PI * -3 / 2, 30);
+
+        a = aRef.current;
+        b = bRef.current;
+
+        drawCircle(a.x, a.y, 10, "red");
+        drawCircle(b.x, b.y, 10, "blue");
 
 
 
