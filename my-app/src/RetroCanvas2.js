@@ -10,10 +10,10 @@ function RetroCanvas2() {
     */
 
     const lineWidth = 20;
-    const spacing = 100;
+    const spacing = 200;
     const radius = 30;
-    const arcAnimationSpeed = 800;
-    const lineAnimationSpeed = 800;
+    const arcAnimationSpeed = 40;
+    const lineAnimationSpeed = 40;
 
     const [colors, setColors] = useState([
         '#AF2327', // Dark Red
@@ -23,12 +23,15 @@ function RetroCanvas2() {
         '#FFD37C'  // Yellow
     ]);
 
+    const borderColor = "#00ff00";
+    const borderSize = 6;
+
 
     const canvasRef = useRef(null);
     const aRef = useRef({ x:1000, y:600 });
     const bRef = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
     });
 
 
@@ -56,8 +59,9 @@ function RetroCanvas2() {
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-
         ctx.lineWidth = lineWidth;
+
+        
 
         const a = aRef.current;
         const b = bRef.current;
@@ -75,25 +79,57 @@ function RetroCanvas2() {
             y: length * (a.x - b.x) / lengthAB,
         };
 
+        // unit vector in direction of movement - (to move colors back a bit)
+        const dNorm = {
+            x: (b.y - a.y) / lengthAB,
+            y: (a.x - b.x) / lengthAB,
+        }
+
         // silly trick to prevent border drawing (thanks web browser!! (ಠ_ಠ))
         const d2 = {
             x: (length + 1) * (b.y - a.y) / lengthAB,
             y: (length + 1) * (a.x - b.x) / lengthAB,
         };
 
+
+
+        // 
+        const startXBorder = a.x + 0.5 * ab.x;
+        const startYBorder = a.y + 0.5 * ab.y;
+
+        const endXBorder = a.x + d2.x + 0.5 * ab.x;
+        const endYBorder = a.y + d2.y + 0.5 * ab.y;
+
+        ctx.beginPath();
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = borderSize*2 + spacing;
+        ctx.moveTo(startXBorder, startYBorder);
+        ctx.lineTo(endXBorder, endYBorder);
+        ctx.stroke();
+
+
+        ctx.lineWidth = lineWidth;
+
+
         colors.forEach((color, index) => { 
             
-            const startX = a.x + (index / (colors.length - 1)) * ab.x;
-            const startY = a.y + (index / (colors.length - 1)) * ab.y;
+            const startX = a.x + (index / (colors.length - 1)) * ab.x - dNorm.x;
+            const startY = a.y + (index / (colors.length - 1)) * ab.y - dNorm.y;
 
             const endX = a.x + d2.x + (index / (colors.length - 1)) * ab.x;
             const endY = a.y + d2.y + (index / (colors.length - 1)) * ab.y;
 
+
+            
+
             ctx.beginPath();
             ctx.strokeStyle = color;
+
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
             ctx.stroke();
+
+            
 
         })
 
@@ -125,7 +161,9 @@ function RetroCanvas2() {
                     requestAnimationFrame(animateLine);
                 }
                 else { 
-                    drawLine(length, true);
+                    drawLine(length, false);
+                    drawLine(length, false);
+                    drawLine(length, true)
                     resolve();
                 }
             }
@@ -430,20 +468,9 @@ function RetroCanvas2() {
 
     async function test() { 
 
-
-        for (let i = 0; i < 10; i++) {
-
-            const rotation = Math.round(Math.random() * 8 - 4) * 90;
-            await runArc(rotation);
-
-            const maxDistance = findDistanceToEdge();
-            const distance = Math.random() * maxDistance / 2;
-            await runLine(distance);
-
-        
-        }
-
-        await runLine(findDistanceToEdge());
+        // drawLine(400);
+        await runLine(400);
+        // runArc()
 
        
     }
