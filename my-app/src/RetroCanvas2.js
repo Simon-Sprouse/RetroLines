@@ -3,30 +3,17 @@ import React, { useState, useRef, useEffect } from 'react';
 function RetroCanvas2() { 
 
 
-    const lineWidth = 30;
+    /*
+    ------------------------------------------
+                    Parameters
+    ------------------------------------------
+    */
+
+    const lineWidth = 20;
     const spacing = 100;
-
     const radius = 30;
-
     const arcAnimationSpeed = 800;
     const lineAnimationSpeed = 800;
-
-
-
-    const canvasRef = useRef(null);
-
-    const aRef = useRef({ x:1000, y:600 });
-
-    const bRef = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
-    });
-
-
-    
-    const [boundingBox, setBoundingBox] = useState(null);
-
-
 
     const [colors, setColors] = useState([
         '#AF2327', // Dark Red
@@ -37,27 +24,27 @@ function RetroCanvas2() {
     ]);
 
 
-    function drawCircle(x, y, radius, color) { 
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.closePath();
-    }
-    
-    function resetBackground() { 
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = "#572800";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    const canvasRef = useRef(null);
+    const aRef = useRef({ x:1000, y:600 });
+    const bRef = useRef({ 
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
+    });
 
 
 
 
+
+
+
+
+
+
+    /*
+    ------------------------------------------
+                    Draw Line
+    ------------------------------------------
+    */
 
 
     function distance(a, b) { 
@@ -149,7 +136,11 @@ function RetroCanvas2() {
 
 
 
-
+    /*
+    ------------------------------------------
+                    Draw Arc  
+    ------------------------------------------
+    */
 
 
     function findPointAfterRotation(centerX, centerY, outerX, outerY, rotation) { 
@@ -277,68 +268,12 @@ function RetroCanvas2() {
     }
 
 
-    // a - starting point
-    // d - unit vector from a
-    // edge - line that a will intesect with
-    function intersectRayWithEdge(a, d, edge) {
-        const { p1, p2 } = edge;
-        const e = {x: p2.x - p1.x, y: p2.y - p1.y}; // vector in direction of edge
 
-        const denom = e.x * d.y - e.y * d.x;
-        // in case of parallel lines, no intersection
-        if (denom === 0) { 
-            return null;
-        }
-
-        const tEdge = ((p1.x - a.x) * d.y - (p1.y - a.y) * d.x) / denom;
-        const tRay = ((p1.x - a.x) * e.y - (p1.y - a.y) * e.x) / denom;
-
-        if (tEdge >= 0 && tEdge <= 1) { 
-            return tRay;
-        }
-        else { 
-            return null;
-        }
-
-
-    }
-
-    function getDistanceToEdge() { 
-        const a = aRef.current;
-        const b = bRef.current;
-
-
-        const lengthAB = distance(a, b);
-
-        const d = {
-            x: (b.y - a.y) / lengthAB,
-            y: (a.x - b.x) / lengthAB,
-        };
-
-        const tl = boundingBox.tl;
-        const tr = boundingBox.tr;
-        const bl = boundingBox.bl;
-        const br = boundingBox.br;
-
-        const edges = [
-            { p1: tl, p2: tr },  // top
-            { p1: bl, p2: br },  // bottom
-            { p1: tl, p2: bl },  // left
-            { p1: tr, p2: br },  // right
-        ];
-
-        for (const edge of edges) { 
-            const tRay = intersectRayWithEdge(a, d, edge);
-            console.log(tRay);
-        }
-
-
-
-    }
-
-
-
-
+    /*
+    ------------------------------------------
+                  Helper Functions
+    ------------------------------------------
+    */
 
 
 
@@ -415,9 +350,30 @@ function RetroCanvas2() {
 
 
 
+    function drawCircle(x, y, radius, color) { 
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.closePath();
+    }
+    
+    function resetBackground() { 
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#572800";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
 
-
+    /*
+    ------------------------------------------
+                        UX
+    ------------------------------------------
+    */
 
     useEffect(() => {
         
@@ -431,15 +387,6 @@ function RetroCanvas2() {
         handleResize();
 
 
-
-        setBoundingBox({
-            tl: {x: 0, y: 0},
-            tr: {x: canvas.width, y: 0},
-            bl: {x: 0, y: canvas.height},
-            br: {x: canvas.width, y: canvas.height},
-        })
-
-
         window.addEventListener("resize", handleResize);
         
         return () => {
@@ -447,40 +394,6 @@ function RetroCanvas2() {
         }
 
     }, []);
-
-
-
-
-    async function test() { 
-
-
-
-        // console.log(boundingBox);
-
-
-        for (let i = 0; i < 10; i++) {
-
-            const rotation = Math.round(Math.random() * 8 - 4) * 90;
-            await runArc(rotation);
-
-            const maxDistance = findDistanceToEdge();
-            const distance = Math.random() * maxDistance / 2;
-            await runLine(distance);
-
-        
-        }
-
-        await runLine(findDistanceToEdge());
-
-        
-
-        
-
-
-       
-    }
-
-
 
 
     useEffect(() => { 
@@ -508,6 +421,32 @@ function RetroCanvas2() {
             document.removeEventListener("keydown", handleKeyDown);
         }
     })
+
+    /*
+    ------------------------------------------
+                 Movement Functions
+    ------------------------------------------
+    */
+
+    async function test() { 
+
+
+        for (let i = 0; i < 10; i++) {
+
+            const rotation = Math.round(Math.random() * 8 - 4) * 90;
+            await runArc(rotation);
+
+            const maxDistance = findDistanceToEdge();
+            const distance = Math.random() * maxDistance / 2;
+            await runLine(distance);
+
+        
+        }
+
+        await runLine(findDistanceToEdge());
+
+       
+    }
 
     
 
