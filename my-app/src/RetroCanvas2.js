@@ -8,8 +8,8 @@ function RetroCanvas2() {
 
     const radius = 30;
 
-    const arcAnimationSpeed = 40;
-    const lineAnimationSpeed = 40;
+    const arcAnimationSpeed = 800;
+    const lineAnimationSpeed = 800;
 
 
 
@@ -18,11 +18,13 @@ function RetroCanvas2() {
     const aRef = useRef({ x:1000, y:600 });
 
     const bRef = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 16) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 16) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
     });
 
 
+    
+    const [boundingBox, setBoundingBox] = useState(null);
 
 
 
@@ -275,8 +277,140 @@ function RetroCanvas2() {
     }
 
 
+    // a - starting point
+    // d - unit vector from a
+    // edge - line that a will intesect with
+    function intersectRayWithEdge(a, d, edge) {
+        const { p1, p2 } = edge;
+        const e = {x: p2.x - p1.x, y: p2.y - p1.y}; // vector in direction of edge
+
+        const denom = e.x * d.y - e.y * d.x;
+        // in case of parallel lines, no intersection
+        if (denom === 0) { 
+            return null;
+        }
+
+        const tEdge = ((p1.x - a.x) * d.y - (p1.y - a.y) * d.x) / denom;
+        const tRay = ((p1.x - a.x) * e.y - (p1.y - a.y) * e.x) / denom;
+
+        if (tEdge >= 0 && tEdge <= 1) { 
+            return tRay;
+        }
+        else { 
+            return null;
+        }
 
 
+    }
+
+    function getDistanceToEdge() { 
+        const a = aRef.current;
+        const b = bRef.current;
+
+
+        const lengthAB = distance(a, b);
+
+        const d = {
+            x: (b.y - a.y) / lengthAB,
+            y: (a.x - b.x) / lengthAB,
+        };
+
+        const tl = boundingBox.tl;
+        const tr = boundingBox.tr;
+        const bl = boundingBox.bl;
+        const br = boundingBox.br;
+
+        const edges = [
+            { p1: tl, p2: tr },  // top
+            { p1: bl, p2: br },  // bottom
+            { p1: tl, p2: bl },  // left
+            { p1: tr, p2: br },  // right
+        ];
+
+        for (const edge of edges) { 
+            const tRay = intersectRayWithEdge(a, d, edge);
+            console.log(tRay);
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+    function findDistanceToEdge() { 
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+
+        const a = aRef.current;
+        const b = bRef.current;
+
+
+        const lengthAB = distance(a, b);
+
+        const d = {
+            x: (b.y - a.y) / lengthAB,
+            y: (a.x - b.x) / lengthAB,
+        };
+
+
+        const pad = 0;
+
+        const minX = 0 + pad;
+        const minY = 0 + pad;
+        const maxX = canvas.width - pad;
+        const maxY = canvas.height - pad;
+
+
+
+
+        // TODO handle this
+        if (d.y === 0) { 
+
+        }
+
+
+        // one of these will be negative and one will be positive
+        let bottomT = (maxY - a.y) / d.y;
+        let topT = (minY - a.y) / d.y;
+
+        // again one will be negative and the other positive
+        let leftT = (minX - a.x) / d.x; 
+        let rightT = (maxX - a.x) / d.x;
+
+
+
+        // if (a.x < minX) { 
+        //     leftT = -Infinity;
+        // }
+        
+
+        
+        // two will be negative, one is correct, one is outside of box -- return index 2
+        const arr = [bottomT, topT, leftT, rightT];
+        arr.sort((x, y) => x - y);
+
+
+
+        
+        // ctx.beginPath();
+        // ctx.lineWidth = 20;
+        // ctx.strokeStyle = "green";
+        // ctx.moveTo(a.x, a.y);
+        // ctx.lineTo(a.x + arr[2] * d.x, a.y + arr[2] * d.y);
+        // ctx.stroke();
+
+        return arr[2];
+
+
+
+    }
 
 
 
@@ -296,6 +430,16 @@ function RetroCanvas2() {
         
         handleResize();
 
+
+
+        setBoundingBox({
+            tl: {x: 0, y: 0},
+            tr: {x: canvas.width, y: 0},
+            bl: {x: 0, y: canvas.height},
+            br: {x: canvas.width, y: canvas.height},
+        })
+
+
         window.addEventListener("resize", handleResize);
         
         return () => {
@@ -310,13 +454,23 @@ function RetroCanvas2() {
     async function test() { 
 
 
-        const n = 4;
-        for (let i = 0; i < n; i++ ) { 
-            await runLine(400);
-            await runArc((360/n) - 360);
-            await runLine(400);
+
+        // console.log(boundingBox);
+
+
+        for (let i = 0; i < 10; i++) {
+
+            const rotation = Math.round(Math.random() * 8 - 4) * 90;
+            await runArc(rotation);
+
+            const maxDistance = findDistanceToEdge();
+            const distance = Math.random() * maxDistance / 2;
+            await runLine(distance);
+
+        
         }
 
+        await runLine(findDistanceToEdge());
 
         
 
@@ -341,6 +495,9 @@ function RetroCanvas2() {
             }
             else if (event.key === "r") { 
                 window.location.reload();
+            }
+            else if (event.key === "f") { 
+                runLine(10000);
             }
         }
 
