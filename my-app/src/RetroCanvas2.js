@@ -10,28 +10,38 @@ function RetroCanvas2() {
     */
 
     const lineWidth = 20;
-    const spacing = 200;
+    const spacing = 100;
     const radius = 30;
     const arcAnimationSpeed = 40;
     const lineAnimationSpeed = 40;
 
-    const [colors, setColors] = useState([
-        '#AF2327', // Dark Red
-        '#F25C3C', // Orange-Red
-        '#F97C1E', // Orange
-        '#F9A31E', // Light Orange
-        '#FFD37C'  // Yellow
-    ]);
+    // const [colors, setColors] = useState([
+    //     '#AF2327', // Dark Red
+    //     '#F25C3C', // Orange-Red
+    //     '#F97C1E', // Orange
+    //     '#F9A31E', // Light Orange
+    //     '#FFD37C'  // Yellow
+    // ]);
 
-    const borderColor = "#00ff00";
-    const borderSize = 6;
+    const [colors, setColors] = useState([
+        '#2C3E50', // Deep Charcoal
+        '#4E6E58', // Olive Green
+        '#C2C287', // Sand
+        '#E2D4B7', // Light Beige
+        '#F7F7E8'  // Off White
+    ]);
+    
+    
+
+    const borderColor = "#000000";
+    const borderSize = lineWidth + spacing - 10;
 
 
     const canvasRef = useRef(null);
     const aRef = useRef({ x:1000, y:600 });
     const bRef = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
     });
 
 
@@ -93,7 +103,7 @@ function RetroCanvas2() {
 
 
 
-        // 
+        // draw border
         const startXBorder = a.x + 0.5 * ab.x;
         const startYBorder = a.y + 0.5 * ab.y;
 
@@ -102,7 +112,7 @@ function RetroCanvas2() {
 
         ctx.beginPath();
         ctx.strokeStyle = borderColor;
-        ctx.lineWidth = borderSize*2 + spacing;
+        ctx.lineWidth = borderSize;
         ctx.moveTo(startXBorder, startYBorder);
         ctx.lineTo(endXBorder, endYBorder);
         ctx.stroke();
@@ -215,13 +225,22 @@ function RetroCanvas2() {
             const centerX = a.x + h * Math.cos(Math.PI * 2 - startingAngle);
             const centerY = a.y - h * Math.sin(Math.PI * 2 - startingAngle);
 
+
+            // draw border
+            const r = radius + 0.5 * spacing
+            ctx.beginPath();
+            ctx.lineWidth = borderSize; 
+            ctx.strokeStyle = borderColor;
+            ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
+            ctx.stroke();
+            ctx.lineWidth = lineWidth;
+
             colors.forEach((color, index) => { 
 
                 const r = radius + (colors.length - index - 1) / (colors.length - 1) * spacing
     
                 ctx.beginPath();
                 ctx.strokeStyle = color;
-                // ctx.moveTo(a.x, a.y);
                 ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
                 ctx.stroke();
             })
@@ -241,13 +260,22 @@ function RetroCanvas2() {
 
             // drawCircle(centerX, centerY, radius / 2, "cyan");
 
+            // draw border
+            const r = radius + 0.5 * spacing;
+            ctx.beginPath();
+            ctx.lineWidth = borderSize;
+            ctx.strokeStyle = borderColor;
+            ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
+            ctx.stroke();
+            ctx.lineWidth = lineWidth;
+           
+
             colors.forEach((color, index) => { 
                 
                 const r = radius + (index / (colors.length - 1)) * spacing;
 
                 ctx.beginPath();
                 ctx.strokeStyle = color;
-                // ctx.moveTo(a.x, a.y);
                 ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
                 ctx.stroke();
             })
@@ -402,7 +430,8 @@ function RetroCanvas2() {
     function resetBackground() { 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = "#572800";
+        // ctx.fillStyle = "#572800";
+        ctx.fillStyle = "#440044";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -468,9 +497,18 @@ function RetroCanvas2() {
 
     async function test() { 
 
+        
+
         // drawLine(400);
-        await runLine(400);
-        // runArc()
+        for (let i = 0; i < 1000; i++) { 
+
+            const rotation = Math.round(Math.random() * 8 - 4) * 90;
+            await runArc(rotation);
+            const distance = Math.min(300, findDistanceToEdge())
+            await runLine(distance);
+        }
+        
+
 
        
     }
