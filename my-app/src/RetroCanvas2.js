@@ -14,6 +14,7 @@ function RetroCanvas2() {
     const radius = 30;
     const arcAnimationSpeed = 40;
     const lineAnimationSpeed = 40;
+    const pad = 300;
 
     // const [colors, setColors] = useState([
     //     '#AF2327', // Dark Red
@@ -38,8 +39,8 @@ function RetroCanvas2() {
 
 
     const canvasRef = useRef(null);
-    const aRef = useRef({ x:1000, y:600 });
-    const bRef = useRef({ 
+    const a1Ref = useRef({ x:1000, y:600 });
+    const b1Ref = useRef({ 
         x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
         y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
     });
@@ -64,8 +65,43 @@ function RetroCanvas2() {
         return Math.sqrt((b.x - a.x)**2 + (b.y - a.y)**2);
     }
 
+    // to calculate where points land without drawing them
+    function movePointsLine(a, b, length) { 
 
-    function drawLine(length, updatePoints=true) {
+
+        const lengthAB = distance(a, b);
+
+        const ab = {
+            x: spacing * (b.x - a.x) / lengthAB,
+            y: spacing * (b.y - a.y) / lengthAB,
+        };
+
+        const d = {
+            x: length * (b.y - a.y) / lengthAB,
+            y: length * (a.x - b.x) / lengthAB,
+        };
+
+
+        const newPoint =  {
+            aEnd: {
+                x: a.x + d.x,
+                y: a.y + d.y,
+            },
+            bEnd: {
+                x: a.x + d.x + ab.x,
+                y: a.y + d.y + ab.y,
+            }
+            
+        }
+
+        return newPoint;
+
+ 
+    
+    }
+
+
+    function drawLine(aRef, bRef, length, updatePoints=true) {
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -167,13 +203,13 @@ function RetroCanvas2() {
             function animateLine() { 
                 if (animationLength + lineAnimationSpeed < length) { 
                     animationLength += lineAnimationSpeed;
-                    drawLine(animationLength, false);
+                    drawLine(a1Ref, b1Ref, animationLength, false);
                     requestAnimationFrame(animateLine);
                 }
                 else { 
-                    drawLine(length, false);
-                    drawLine(length, false);
-                    drawLine(length, true)
+                    drawLine(a1Ref, b1Ref, length, false);
+                    drawLine(a1Ref, b1Ref, length, false);
+                    drawLine(a1Ref, b1Ref, length, true)
                     resolve();
                 }
             }
@@ -207,7 +243,41 @@ function RetroCanvas2() {
     }
 
 
-    function drawArc(rotation, updatePoints=true) { 
+    // function to move points in an arc without drawing them
+    function movePointsArc(a, b, rotation) {
+
+        const startingAngle = Math.atan2(b.y - a.y, b.x - a.x);
+
+        if (rotation >= 0) { 
+            const h = radius + spacing;
+            const centerX = a.x + h * Math.cos(Math.PI * 2 - startingAngle);
+            const centerY = a.y - h * Math.sin(Math.PI * 2 - startingAngle);
+
+            const newPoint = {
+                aEnd: findPointAfterRotation(centerX, centerY, a.x, a.y, rotation),
+                bEnd: findPointAfterRotation(centerX, centerY, b.x, b.y, rotation),
+            }
+
+            return newPoint;
+        }
+        else if (rotation < 0) { 
+
+            const h = radius;
+            const centerX = a.x - h * Math.cos(Math.PI * 2 - startingAngle);
+            const centerY = a.y + h * Math.sin(Math.PI * 2 - startingAngle);
+
+            const newPoint = {
+                aEnd: findPointAfterRotation(centerX, centerY, a.x, a.y, rotation),
+                bEnd: findPointAfterRotation(centerX, centerY, b.x, b.y, rotation),
+            }
+
+            return newPoint;
+
+        }
+    }
+
+
+    function drawArc(aRef, bRef, rotation, updatePoints=true) { 
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
@@ -301,11 +371,11 @@ function RetroCanvas2() {
                 function animateArc() { 
                     if (animationRotation + arcAnimationSpeed < rotation) { 
                         animationRotation += arcAnimationSpeed;
-                        drawArc(degreesToRadians(animationRotation), false);
+                        drawArc(a1Ref, b1Ref, degreesToRadians(animationRotation), false);
                         requestAnimationFrame(animateArc);
                     }
                     else { 
-                        drawArc(degreesToRadians(rotation), true);
+                        drawArc(a1Ref, b1Ref, degreesToRadians(rotation), true);
                         resolve();
                     }
                 }
@@ -317,11 +387,11 @@ function RetroCanvas2() {
                 function animateArc() { 
                     if (animationRotation - arcAnimationSpeed > rotation) { 
                         animationRotation -= arcAnimationSpeed;
-                        drawArc(degreesToRadians(animationRotation), false);
+                        drawArc(a1Ref, b1Ref, degreesToRadians(animationRotation), false);
                         requestAnimationFrame(animateArc);
                     }
                     else { 
-                        drawArc(degreesToRadians(rotation), true);
+                        drawArc(a1Ref, b1Ref, degreesToRadians(rotation), true);
                         resolve();
                     }
                 }
@@ -343,14 +413,13 @@ function RetroCanvas2() {
 
 
 
-    function findDistanceToEdge() { 
+    function findDistanceToEdge(a, b) { 
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
 
-        const a = aRef.current;
-        const b = bRef.current;
+
 
 
         const lengthAB = distance(a, b);
@@ -361,41 +430,65 @@ function RetroCanvas2() {
         };
 
 
-        const pad = 0;
+   
 
         const minX = 0 + pad;
         const minY = 0 + pad;
         const maxX = canvas.width - pad;
         const maxY = canvas.height - pad;
 
-
-
-
-        // TODO handle this
-        if (d.y === 0) { 
-
+        if (a.x < minX || a.x > maxX || a.y < minY || a.y > maxY) { 
+            console.log("aye yo? ");
+            return -1;
         }
 
-
-        // one of these will be negative and one will be positive
-        let bottomT = (maxY - a.y) / d.y;
-        let topT = (minY - a.y) / d.y;
-
-        // again one will be negative and the other positive
-        let leftT = (minX - a.x) / d.x; 
-        let rightT = (maxX - a.x) / d.x;
-
-
-
         // if (a.x < minX) { 
-        //     leftT = -Infinity;
+        //     console.log("minX");
+        //     return -1;
         // }
-        
+        // else if (a.x > maxX) { 
+        //     console.log("maxX");
+        //     return -1;
+        // }
+        // else if (a.y < minY) { 
+        //     console.log("minY");
+        //     return -1;
+        // }
+        // else if (a.y > maxY) { 
+        //     console.log("maxY");
+        //     return -1;
+        // }
+
+
+
+        let bottomT = -1;
+        let topT = -1;
+        let rightT = -1;
+        let leftT = -1;
+
+        // TODO handle this
+        if (d.y != 0) { 
+            // one of these will be negative and one will be positive
+            bottomT = (maxY - a.y) / d.y;
+            topT = (minY - a.y) / d.y;
+        }
+        if (d.x != 0) { 
+            // again one will be negative and the other positive
+            leftT = (minX - a.x) / d.x; 
+            rightT = (maxX - a.x) / d.x;
+        }
 
         
         // two will be negative, one is correct, one is outside of box -- return index 2
         const arr = [bottomT, topT, leftT, rightT];
-        arr.sort((x, y) => x - y);
+        
+        const positives = arr.filter(num => num > 0);
+
+        if (positives.length === 0) { 
+            return -1;
+        }
+        
+        const t = Math.min(...positives);
 
 
 
@@ -404,14 +497,15 @@ function RetroCanvas2() {
         // ctx.lineWidth = 20;
         // ctx.strokeStyle = "green";
         // ctx.moveTo(a.x, a.y);
-        // ctx.lineTo(a.x + arr[2] * d.x, a.y + arr[2] * d.y);
+        // ctx.lineTo(a.x + t * d.x, a.y + t * d.y);
         // ctx.stroke();
 
-        return arr[2];
+        return t;
 
 
 
     }
+
 
 
 
@@ -425,6 +519,11 @@ function RetroCanvas2() {
         ctx.fillStyle = color;
         ctx.fill();
         ctx.closePath();
+    }
+
+    function drawPoints(aRef, bRef) { 
+        drawCircle(aRef.current.x, aRef.current.y, 10, "red");
+        drawCircle(bRef.current.x, bRef.current.y, 10, "blue");
     }
     
     function resetBackground() { 
@@ -479,6 +578,9 @@ function RetroCanvas2() {
             else if (event.key === "f") { 
                 runLine(10000);
             }
+            else if (event.key == "p") { 
+                drawPoints(a1Ref, b1Ref);
+            }
         }
 
 
@@ -495,23 +597,75 @@ function RetroCanvas2() {
     ------------------------------------------
     */
 
+
+    async function randomWalk() { 
+        const canvas = canvasRef.current;
+
+        const testARef = {x: a1Ref.current.x, y: a1Ref.current.y};
+        const testBRef = {x: b1Ref.current.x, y: b1Ref.current.y};
+
+        while (true) {
+
+            const distance = Math.random() * canvas.height;
+            const rotation = Math.random() * 720 - 360;
+
+            let movedPoints;
+            movedPoints = movePointsLine(testARef, testBRef, distance);
+            movedPoints = movePointsArc(movedPoints.aEnd, movedPoints.bEnd, rotation);
+
+            const distanceToEdge = findDistanceToEdge(movedPoints.aEnd, movedPoints.bEnd);
+
+            if (distanceToEdge > 0) { 
+                await runLine(distance);
+                await runArc(rotation);
+                break;
+            }
+
+        }
+    }
+
     async function test() { 
 
         
 
-        // drawLine(400);
-        for (let i = 0; i < 1000; i++) { 
+    /* 
 
-            const rotation = Math.round(Math.random() * 8 - 4) * 90;
-            await runArc(rotation);
-            const distance = Math.min(300, findDistanceToEdge())
-            await runLine(distance);
-        }
+    While True:
+        try:
+            find test endpoint values
+            verify test enpoint values
+            if good: 
+                draw them 
+                break
+            else:
+                run the loop again
+
+
+    
+    */
+
+    for (let i = 0; i < 1000; i++) {
+        await randomWalk();
+    }
         
+    // drawPoints(a1Ref, b1Ref);
+
+    // let movedPoints = movePointsArc(a1Ref.current, b1Ref.current, - Math.PI / 2);
+    // a1Ref.current = movedPoints.aEnd;
+    // b1Ref.current = movedPoints.bEnd;
+
+    // // drawLine(aRef, bRef, 400, true);
+    // // drawArc(a1Ref, b1Ref, Math.PI / 2, true);
+
+
+        
+    // drawPoints(a1Ref, b1Ref);
 
 
        
     }
+
+    
 
     
 
