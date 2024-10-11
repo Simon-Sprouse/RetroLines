@@ -49,7 +49,7 @@ function RetroCanvas2() {
 
 
 
-
+    const run = useRef(false);
 
 
 
@@ -581,6 +581,9 @@ function RetroCanvas2() {
             else if (event.key == "p") { 
                 drawPoints(a1Ref, b1Ref);
             }
+            else if (event.key == "k") { 
+                startStopAnimation();
+            }
         }
 
 
@@ -621,6 +624,18 @@ function RetroCanvas2() {
                 break;
             }
 
+        }
+    }
+
+    async function startStopAnimation() { 
+
+        run.current = !run.current;
+
+        while (true) { 
+            while (run.current) {
+                await randomWalk();
+            }
+            break;
         }
     }
 
