@@ -10,13 +10,13 @@ function RetroCanvas2() {
     ------------------------------------------
     */
 
-    const lineWidth = 40;
-    const spacing = 200;
-    const radius = 50;
-    const arcAnimationSpeed = 40;
-    const lineAnimationSpeed = 40;
+    const lineWidth = 20;
+    const spacing = 70;
+    const radius = 30;
+    const arcAnimationSpeed = 200;
+    const lineAnimationSpeed = 200;
     const pad = 0;
-    const colorSpeed = 0.1;
+    const colorSpeed = 0.0002;
 
 
 
@@ -57,13 +57,11 @@ function RetroCanvas2() {
     // ]);
 
 
-    const backgroundColor = "#1B263B";  // Dark Navy Blue
+    const backgroundColor = hsvToHex(0, 0, 0);  // Dark Navy Blue
     const colors = useRef([
-        [0, 100, 100],
-        [0, 100, 100],
-        [0, 100, 100],
-        [0, 100, 100],
-        [0, 100, 100],
+        [200, 70, 100],
+        [200, 70, 100],
+
     ]);
 
 
@@ -73,14 +71,14 @@ function RetroCanvas2() {
     
 
     const borderColor = "#000000";
-    const borderSize = lineWidth + spacing - 10;
+    const borderSize = lineWidth + spacing;
 
 
     const canvasRef = useRef(null);
     const a1Ref = useRef({ x:1000, y:800 });
     const b1Ref = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
-        y: 800 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 8) * spacing),
+        y: 800 + Math.round(Math.sin(Math.PI * 4 / 8) * spacing),
     });
 
 
@@ -93,12 +91,12 @@ function RetroCanvas2() {
 
 
     function updateColors(distance) { 
-        console.log("distance: ", distance);
+
 
         const newColors = colors.current.map((hsvSubArray => { 
             return [(hsvSubArray[0] + distance) % 360, hsvSubArray[1], hsvSubArray[2]];
         }))
-        console.log("new colors: ", newColors);
+
         colors.current = newColors;
     }
 
@@ -208,7 +206,7 @@ function RetroCanvas2() {
         ctx.lineWidth = lineWidth;
 
         const colorDistance = length * colorSpeed;
-        console.log(colorDistance);
+
 
 
         colors.current.forEach((color, index) => { 
@@ -745,7 +743,8 @@ function RetroCanvas2() {
         while (true) {
 
             const distance = Math.random() * 800;
-            const rotation = Math.round(Math.random() * 8 - 4) * 90;
+            const rotation = Math.round(Math.random() * 6 - 3) * 90;
+            
 
             let movedPoints;
             movedPoints = movePointsLine(testARef, testBRef, distance);
@@ -824,10 +823,7 @@ function RetroCanvas2() {
         
     // drawPoints(a1Ref, b1Ref);
 
-    colors.current.forEach((color, index) => { 
-        // console.log(...color);
-        console.log(hsvToHex(...color));
-    })
+
 
 
 
