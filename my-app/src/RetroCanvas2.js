@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import hsvToHex from './colors';
 
 function RetroCanvas2() { 
 
@@ -9,13 +10,16 @@ function RetroCanvas2() {
     ------------------------------------------
     */
 
-    const lineWidth = 20;
-    const spacing = 100;
-    const radius = 30;
+    const lineWidth = 40;
+    const spacing = 200;
+    const radius = 50;
     const arcAnimationSpeed = 40;
     const lineAnimationSpeed = 40;
-    const pad = 300;
+    const pad = 0;
 
+
+
+    // const backgroundColor = "#512B0A"
     // const [colors, setColors] = useState([
     //     '#AF2327', // Dark Red
     //     '#F25C3C', // Orange-Red
@@ -24,13 +28,53 @@ function RetroCanvas2() {
     //     '#FFD37C'  // Yellow
     // ]);
 
-    const [colors, setColors] = useState([
-        '#2C3E50', // Deep Charcoal
-        '#4E6E58', // Olive Green
-        '#C2C287', // Sand
-        '#E2D4B7', // Light Beige
-        '#F7F7E8'  // Off White
-    ]);
+    // const backgroundColor = "#440044"
+    // const [colors, setColors] = useState([
+    //     '#2C3E50', // Deep Charcoal
+    //     '#4E6E58', // Olive Green
+    //     '#C2C287', // Sand
+    //     '#E2D4B7', // Light Beige
+    //     '#F7F7E8'  // Off White
+    // ]);
+
+    const backgroundColor = "#1B263B";  // Dark Navy Blue
+    // const colors = useRef([
+    //     '#0F4C81', // Deep Blue
+    //     '#217CA3', // Sky Blue
+    //     '#33A8B0', // Teal
+    //     '#A1C3D1', // Light Blue
+    //     '#F3D6E4'  // Soft Pink
+    // ]);
+
+    const colors = useRef([
+        [358, 80, 69],
+        [12, 75, 95],
+        [26, 88, 98],
+        [36, 88, 98],
+        [40, 51, 100],
+    ])
+
+    // const backgroundColor = "#CACACA";  // Dark Charcoal
+    // const [colors, setColors] = useState([
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA',
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA',
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA', 
+    //     '#CACACA',
+
+    // ]);
+    
     
     
 
@@ -41,8 +85,8 @@ function RetroCanvas2() {
     const canvasRef = useRef(null);
     const a1Ref = useRef({ x:1000, y:600 });
     const b1Ref = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 4) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 4) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 8) * spacing),
+        y: 600 + Math.round(Math.sin(Math.PI * 4 / 8) * spacing),
     });
 
 
@@ -157,19 +201,26 @@ function RetroCanvas2() {
         ctx.lineWidth = lineWidth;
 
 
-        colors.forEach((color, index) => { 
+        colors.current.forEach((color, index) => { 
             
-            const startX = a.x + (index / (colors.length - 1)) * ab.x - dNorm.x;
-            const startY = a.y + (index / (colors.length - 1)) * ab.y - dNorm.y;
+            const startX = a.x + (index / (colors.current.length - 1)) * ab.x - dNorm.x;
+            const startY = a.y + (index / (colors.current.length - 1)) * ab.y - dNorm.y;
 
-            const endX = a.x + d2.x + (index / (colors.length - 1)) * ab.x;
-            const endY = a.y + d2.y + (index / (colors.length - 1)) * ab.y;
+            const endX = a.x + d2.x + (index / (colors.current.length - 1)) * ab.x;
+            const endY = a.y + d2.y + (index / (colors.current.length - 1)) * ab.y;
 
+            const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
 
+            const next_color = [color[0] + 100 % 360, color[1], color[2]];
+
+            gradient.addColorStop(0, hsvToHex(...color));
+            gradient.addColorStop(1, hsvToHex(...next_color));
+
+  
             
 
             ctx.beginPath();
-            ctx.strokeStyle = color;
+            ctx.strokeStyle = gradient;
 
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
@@ -305,12 +356,12 @@ function RetroCanvas2() {
             ctx.stroke();
             ctx.lineWidth = lineWidth;
 
-            colors.forEach((color, index) => { 
+            colors.current.forEach((color, index) => { 
 
-                const r = radius + (colors.length - index - 1) / (colors.length - 1) * spacing
+                const r = radius + (colors.current.length - index - 1) / (colors.current.length - 1) * spacing
     
                 ctx.beginPath();
-                ctx.strokeStyle = color;
+                ctx.strokeStyle = hsvToHex(...color);
                 ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
                 ctx.stroke();
             })
@@ -340,12 +391,12 @@ function RetroCanvas2() {
             ctx.lineWidth = lineWidth;
            
 
-            colors.forEach((color, index) => { 
+            colors.current.forEach((color, index) => { 
                 
-                const r = radius + (index / (colors.length - 1)) * spacing;
+                const r = radius + (index / (colors.current.length - 1)) * spacing;
 
                 ctx.beginPath();
-                ctx.strokeStyle = color;
+                ctx.strokeStyle = hsvToHex(...color);
                 ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
                 ctx.stroke();
             })
@@ -529,8 +580,7 @@ function RetroCanvas2() {
     function resetBackground() { 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        // ctx.fillStyle = "#572800";
-        ctx.fillStyle = "#440044";
+        ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -566,7 +616,7 @@ function RetroCanvas2() {
 
         function handleKeyDown(event) {
 
-            if (event.key === "Enter") { 
+            if (event.key === "t") { 
                 test();
             }
             else if (event.key === " ") { 
@@ -581,7 +631,7 @@ function RetroCanvas2() {
             else if (event.key == "p") { 
                 drawPoints(a1Ref, b1Ref);
             }
-            else if (event.key == "k") { 
+            else if (event.key == "Enter") { 
                 startStopAnimation();
             }
         }
@@ -607,10 +657,37 @@ function RetroCanvas2() {
         const testARef = {x: a1Ref.current.x, y: a1Ref.current.y};
         const testBRef = {x: b1Ref.current.x, y: b1Ref.current.y};
 
+
         while (true) {
 
             const distance = Math.random() * canvas.height;
             const rotation = Math.random() * 720 - 360;
+
+            let movedPoints;
+            movedPoints = movePointsLine(testARef, testBRef, distance);
+            movedPoints = movePointsArc(movedPoints.aEnd, movedPoints.bEnd, rotation);
+
+            const distanceToEdge = findDistanceToEdge(movedPoints.aEnd, movedPoints.bEnd);
+
+            if (distanceToEdge > 0) { 
+                await runLine(distance);
+                await runArc(rotation);
+                break;
+            }
+
+        }
+    }
+
+    async function cornerWalk() { 
+        const canvas = canvasRef.current;
+
+        const testARef = {x: a1Ref.current.x, y: a1Ref.current.y};
+        const testBRef = {x: b1Ref.current.x, y: b1Ref.current.y};
+
+        while (true) {
+
+            const distance = Math.random() * 800;
+            const rotation = Math.round(Math.random() * 8 - 4) * 90;
 
             let movedPoints;
             movedPoints = movePointsLine(testARef, testBRef, distance);
@@ -633,7 +710,7 @@ function RetroCanvas2() {
 
         while (true) { 
             while (run.current) {
-                await randomWalk();
+                await cornerWalk();
             }
             break;
         }
@@ -659,9 +736,10 @@ function RetroCanvas2() {
     
     */
 
-    for (let i = 0; i < 1000; i++) {
-        await randomWalk();
-    }
+    // drawPoints(a1Ref, b1Ref);
+    // drawLine(a1Ref, b1Ref, 400);
+    // drawArc(a1Ref, b1Ref, Math.PI / 2);
+    // drawLine(a1Ref, b1Ref, 400);
         
     // drawPoints(a1Ref, b1Ref);
 
@@ -675,6 +753,12 @@ function RetroCanvas2() {
 
         
     // drawPoints(a1Ref, b1Ref);
+
+    colors.current.forEach((color, index) => { 
+        // console.log(...color);
+        console.log(hsvToHex(...color));
+    })
+
 
 
        
