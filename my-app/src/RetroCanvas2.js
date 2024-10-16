@@ -16,6 +16,7 @@ function RetroCanvas2() {
     const arcAnimationSpeed = 40;
     const lineAnimationSpeed = 40;
     const pad = 0;
+    const colorSpeed = 0.1;
 
 
 
@@ -37,7 +38,7 @@ function RetroCanvas2() {
     //     '#F7F7E8'  // Off White
     // ]);
 
-    const backgroundColor = "#1B263B";  // Dark Navy Blue
+    // const backgroundColor = "#1B263B";  // Dark Navy Blue
     // const colors = useRef([
     //     '#0F4C81', // Deep Blue
     //     '#217CA3', // Sky Blue
@@ -46,35 +47,28 @@ function RetroCanvas2() {
     //     '#F3D6E4'  // Soft Pink
     // ]);
 
-    const colors = useRef([
-        [358, 80, 69],
-        [12, 75, 95],
-        [26, 88, 98],
-        [36, 88, 98],
-        [40, 51, 100],
-    ])
-
-    // const backgroundColor = "#CACACA";  // Dark Charcoal
-    // const [colors, setColors] = useState([
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA',
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA',
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA', 
-    //     '#CACACA',
-
+    // const backgroundColor = "#1B263B";  // Dark Navy Blue
+    // const colors = useRef([
+    //     [358, 80, 69],
+    //     [12, 75, 95],
+    //     [26, 88, 98],
+    //     [36, 88, 98],
+    //     [40, 51, 100],
     // ]);
-    
+
+
+    const backgroundColor = "#1B263B";  // Dark Navy Blue
+    const colors = useRef([
+        [0, 100, 100],
+        [0, 100, 100],
+        [0, 100, 100],
+        [0, 100, 100],
+        [0, 100, 100],
+    ]);
+
+
+
+
     
     
 
@@ -83,10 +77,10 @@ function RetroCanvas2() {
 
 
     const canvasRef = useRef(null);
-    const a1Ref = useRef({ x:1000, y:600 });
+    const a1Ref = useRef({ x:1000, y:800 });
     const b1Ref = useRef({ 
-        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 8) * spacing),
-        y: 600 + Math.round(Math.sin(Math.PI * 4 / 8) * spacing),
+        x: 1000 + Math.round(Math.cos(Math.PI * 4 / 6) * spacing),
+        y: 800 + Math.round(Math.sin(Math.PI * 4 / 6) * spacing),
     });
 
 
@@ -94,6 +88,19 @@ function RetroCanvas2() {
 
 
     const run = useRef(false);
+
+
+
+
+    function updateColors(distance) { 
+        console.log("distance: ", distance);
+
+        const newColors = colors.current.map((hsvSubArray => { 
+            return [(hsvSubArray[0] + distance) % 360, hsvSubArray[1], hsvSubArray[2]];
+        }))
+        console.log("new colors: ", newColors);
+        colors.current = newColors;
+    }
 
 
 
@@ -200,6 +207,9 @@ function RetroCanvas2() {
 
         ctx.lineWidth = lineWidth;
 
+        const colorDistance = length * colorSpeed;
+        console.log(colorDistance);
+
 
         colors.current.forEach((color, index) => { 
             
@@ -211,7 +221,7 @@ function RetroCanvas2() {
 
             const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
 
-            const next_color = [color[0] + 100 % 360, color[1], color[2]];
+            const next_color = [(color[0] + colorDistance) % 360, color[1], color[2]];
 
             gradient.addColorStop(0, hsvToHex(...color));
             gradient.addColorStop(1, hsvToHex(...next_color));
@@ -241,8 +251,17 @@ function RetroCanvas2() {
                 x: a.x + d.x + ab.x,
                 y: a.y + d.y + ab.y,
             };
+
+            // const newColors = colors.current;
+            // newColors.map((hsvSubArray => { 
+            //     return [hsvSubArray[0] + colorDistance, hsvSubArray[1], hsvSubArray[2]];
+            // }))
+            // colors.current = newColors;
+            updateColors(colorDistance);
+
         }
 
+        
  
 
     };
@@ -356,12 +375,30 @@ function RetroCanvas2() {
             ctx.stroke();
             ctx.lineWidth = lineWidth;
 
+            
+            const colorDistance = r * (2 * Math.PI) * (rotation / (Math.PI * 2)) * colorSpeed;
+
             colors.current.forEach((color, index) => { 
 
                 const r = radius + (colors.current.length - index - 1) / (colors.current.length - 1) * spacing
     
                 ctx.beginPath();
-                ctx.strokeStyle = hsvToHex(...color);
+
+                
+                const startX = centerX + r * Math.cos(startingAngle + Math.PI);
+                const startY = centerY + r * Math.sin(startingAngle + Math.PI);
+                const endX = centerX + r * Math.cos(startingAngle + Math.PI + rotation);
+                const endY = centerY + r * Math.sin(startingAngle + Math.PI + rotation);
+
+                
+
+
+                const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+                const next_color = [(color[0] + colorDistance) % 360, color[1], color[2]];
+                gradient.addColorStop(0, hsvToHex(...color));
+                gradient.addColorStop(1, hsvToHex(...next_color));
+                ctx.strokeStyle = gradient;
+
                 ctx.arc(centerX, centerY, r, startingAngle + Math.PI, startingAngle + Math.PI + rotation, false);
                 ctx.stroke();
             })
@@ -369,6 +406,7 @@ function RetroCanvas2() {
             if (updatePoints === true) { 
                 aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
                 bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+                updateColors(colorDistance);
             }
 
 
@@ -389,6 +427,9 @@ function RetroCanvas2() {
             ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
             ctx.stroke();
             ctx.lineWidth = lineWidth;
+
+            // sets the reference
+            const colorDistance = r * (2 * Math.PI) * (-1 * rotation / (Math.PI * 2)) * colorSpeed;
            
 
             colors.current.forEach((color, index) => { 
@@ -396,7 +437,22 @@ function RetroCanvas2() {
                 const r = radius + (index / (colors.current.length - 1)) * spacing;
 
                 ctx.beginPath();
-                ctx.strokeStyle = hsvToHex(...color);
+
+                const startX = centerX + r * Math.cos(startingAngle + Math.PI);
+                const startY = centerY + r * Math.sin(startingAngle + Math.PI);
+                const endX = centerX + r * Math.cos(startingAngle + Math.PI + rotation);
+                const endY = centerY + r * Math.sin(startingAngle + Math.PI + rotation);
+
+                const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+                const next_color = [(color[0] + colorDistance) % 360, color[1], color[2]];
+                gradient.addColorStop(0, hsvToHex(...next_color));
+                gradient.addColorStop(1, hsvToHex(...color));
+                ctx.strokeStyle = gradient;
+
+
+
+
+
                 ctx.arc(centerX, centerY, r, startingAngle, startingAngle + rotation, true);
                 ctx.stroke();
             })
@@ -404,6 +460,8 @@ function RetroCanvas2() {
             if (updatePoints === true) { 
                 aRef.current = findPointAfterRotation(centerX, centerY, a.x, a.y, rotation);
                 bRef.current = findPointAfterRotation(centerX, centerY, b.x, b.y, rotation);
+                
+                updateColors(colorDistance);
             }
 
         }
@@ -489,7 +547,7 @@ function RetroCanvas2() {
         const maxY = canvas.height - pad;
 
         if (a.x < minX || a.x > maxX || a.y < minY || a.y > maxY) { 
-            console.log("aye yo? ");
+            // console.log("aye yo? ");
             return -1;
         }
 
@@ -736,12 +794,24 @@ function RetroCanvas2() {
     
     */
 
-    // drawPoints(a1Ref, b1Ref);
+
+    drawLine(a1Ref, b1Ref, 400);
+    drawArc(a1Ref, b1Ref, -1 * Math.PI / 2);
+
+ 
+
+
+
+
+
+
     // drawLine(a1Ref, b1Ref, 400);
-    // drawArc(a1Ref, b1Ref, Math.PI / 2);
+    // console.log(colors.current)
+
     // drawLine(a1Ref, b1Ref, 400);
-        
-    // drawPoints(a1Ref, b1Ref);
+    // console.log(colors.current);
+
+    
 
     // let movedPoints = movePointsArc(a1Ref.current, b1Ref.current, - Math.PI / 2);
     // a1Ref.current = movedPoints.aEnd;
