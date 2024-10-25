@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import hsvToHex from './colors';
+import { hsvToHex } from './colors';
 import retroLines from './retroLines';
 
 function RetroCanvas2() { 
@@ -15,15 +15,16 @@ function RetroCanvas2() {
 
     const canvasRef = useRef(null);
     const isRunningRef = useRef(false);
+    const isRunningRef2 = useRef(false);
 
     const parameters = {
-        lineWidth: 20,
-        spacing: 70,
+        lineWidth: 30,
+        spacing: 100,
         radius: 30,
         pad: 0,
         arcAnimationSpeed: 60,
         lineAnimationSpeed: 60,
-        colorSpeed: 0.0002,
+        colorSpeed: 0.0000,
         backgroundColor: [0, 0, 0], 
         borderColor: [0, 0, 0],
         colors: [
@@ -33,11 +34,45 @@ function RetroCanvas2() {
             [36, 88, 98],
             [40, 51, 100],
         ],
+
+
+    }
+
+    const parameters2 = {
+        lineWidth: 20,
+        spacing: 100,
+        radius: 30,
+        pad: 0,
+        arcAnimationSpeed: 100,
+        lineAnimationSpeed: 100,
+        colorSpeed: 0.001,
+        backgroundColor: [0, 0, 0], 
+        borderColor: [0, 0, 0],
+        colors: [
+            [0,40,100],
+            [0,40,100],
+        ],
+    }
+
+    const parameters3 = {
+        lineWidth: 30,
+        spacing: 100,
+        radius: 30,
+        pad: 100,
+        arcAnimationSpeed: 30,
+        lineAnimationSpeed: 30,
+        colorSpeed: 0.01,
+        backgroundColor: [0, 0, 0], 
+        borderColor: [0, 0, 0],
+        colors: [
+            [100,40,100],
+        ],
+        movementStyle: "random",
     }
 
 
     const linesRef = useRef(null);
-
+    // const linesRef2 = useRef(null);
 
 
     
@@ -50,8 +85,15 @@ function RetroCanvas2() {
 
 
     useEffect(() => { 
+
         linesRef.current = new retroLines(canvasRef, isRunningRef);
-        linesRef.current.setParameters(parameters);
+        linesRef.current.setParameters(parameters3);
+        
+
+        // linesRef2.current = new retroLines(canvasRef, isRunningRef2);
+        // linesRef2.current.setParameters(parameters2);
+
+
     }, []);
 
     
@@ -107,6 +149,7 @@ function RetroCanvas2() {
             }
             else if (event.key == "Enter") { 
                 linesRef.current.startStopAnimation();
+                // linesRef2.current.startStopAnimation();
             }
         }
 

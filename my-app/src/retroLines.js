@@ -1,4 +1,4 @@
-import hsvToHex from "./colors";
+import { hsvToHex, rgbToHsv, hsvToRgb } from "./colors";
 
 export default class retroLines {
 
@@ -38,13 +38,14 @@ export default class retroLines {
 
         this.run = false;
 
-       
+        this.borderSize = 70;
+        this.movementStyle = "corner";
 
     }
 
 
 
-    setParameters({ lineWidth, spacing, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, backgroundColor, borderColor, colors }) { 
+    setParameters({ lineWidth, spacing, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, backgroundColor, borderColor, colors, movementStyle }) { 
         this.lineWidth = lineWidth;
         this.spacing = spacing;
         this.radius = radius;
@@ -57,6 +58,8 @@ export default class retroLines {
         this.colors = colors;
 
 
+        this.borderSize = this.spacing;
+        this.movementStyle = movementStyle;
 
      
     }
@@ -173,12 +176,25 @@ export default class retroLines {
 
 
         this.colors.forEach((color, index) => { 
-            
-            const startX = a.x + (index / (this.colors.length - 1)) * ab.x - dNorm.x;
-            const startY = a.y + (index / (this.colors.length - 1)) * ab.y - dNorm.y;
 
-            const endX = a.x + d2.x + (index / (this.colors.length - 1)) * ab.x;
-            const endY = a.y + d2.y + (index / (this.colors.length - 1)) * ab.y;
+            let startX;
+            let startY;
+            let endX;
+            let endY;
+
+            
+            if (this.colors.length > 1) {
+                startX = a.x + (index / (this.colors.length - 1)) * ab.x - dNorm.x;
+                startY = a.y + (index / (this.colors.length - 1)) * ab.y - dNorm.y;
+                endX = a.x + d2.x + (index / (this.colors.length - 1)) * ab.x;
+                endY = a.y + d2.y + (index / (this.colors.length - 1)) * ab.y;
+            }
+            else {
+                startX = a.x + 0.5 * ab.x - dNorm.x;
+                startY = a.y + 0.5 * ab.y - dNorm.y;
+                endX = a.x + d2.x + 0.5 * ab.x;
+                endY = a.y + d2.y + 0.5 * ab.y;
+            }
 
             const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
 
@@ -343,7 +359,16 @@ export default class retroLines {
 
             this.colors.forEach((color, index) => { 
 
-                const r = this.radius + (this.colors.length - index - 1) / (this.colors.length - 1) * this.spacing
+                let r;
+
+                if (this.colors.length > 1) { 
+                    r = this.radius + (this.colors.length - index - 1) / (this.colors.length - 1) * this.spacing;
+                }
+                else { 
+                    r = this.radius + 0.5 * this.spacing;
+                }
+
+        
     
                 ctx.beginPath();
 
@@ -397,7 +422,16 @@ export default class retroLines {
 
             this.colors.forEach((color, index) => { 
                 
-                const r = this.radius + (index / (this.colors.length - 1)) * this.spacing;
+
+                let r;
+
+                if (this.colors.length > 1) {
+                    r = this.radius + (index / (this.colors.length - 1)) * this.spacing;
+                }
+                else { 
+                    r = this.radius + 0.5 * this.spacing;
+                }
+                
 
                 ctx.beginPath();
 
@@ -590,6 +624,55 @@ export default class retroLines {
     }
 
 
+    fadeByOpacity(distance) { 
+        const canvas = this.canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+
+
+        ctx.fillStyle = `rgb(0, 0, 0, ${distance})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+
+    }
+
+    fadeByRGB(distance) { 
+        const canvas = this.canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) { 
+            data[i] = Math.max(0, data[i] - distance);
+            data[i+1] = Math.max(0, data[i+1] - distance);
+            data[i+2] = Math.max(0, data[i+2] - distance);
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+
+    fadeByOpacityMultiple(rate) { 
+        const canvas = this.canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) { 
+            data[i] = Math.max(0, Math.floor(data[i] *= rate));
+            data[i+1] = Math.max(0, Math.floor(data[i+1] *= rate));
+            data[i+2] = Math.max(0, Math.floor(data[i+2] *= rate));
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+
+
+
 
 
 
@@ -602,6 +685,8 @@ export default class retroLines {
 
     async randomWalk() { 
         const canvas = this.canvasRef.current;
+
+        
 
         const testARef = {x: this.a1Ref.x, y: this.a1Ref.y};
         const testBRef = {x: this.b1Ref.x, y: this.b1Ref.y};
@@ -656,16 +741,32 @@ export default class retroLines {
 
     async startStopAnimation() { 
 
-        // console.log(this.isRunningRef);
+
 
         this.isRunningRef.current = !this.isRunningRef.current;
 
-        while (true) { 
-            while (this.isRunningRef.current) {
-                await this.cornerWalk();
+    
+
+        if (this.movementStyle === "random") { 
+            while (true) { 
+                while (this.isRunningRef.current) {
+                    await this.randomWalk();
+                    // this.fadeByOpacityMultiple(0.99);
+                }
+                break;
             }
-            break;
         }
+        else if (this.movementStyle === "corner") {
+            while (true) { 
+                while (this.isRunningRef.current) {
+                    await this.cornerWalk();
+                    // this.fadeByOpacityMultiple(0.99);
+                }
+                break;
+            }
+        }
+
+       
     }
 
 
