@@ -21,6 +21,7 @@ export default class retroLines {
 
         this.lineWidth = 20;
         this.spacing = 70;
+        this.borderSize = 70;
         this.radius = 30;
         this.pad = 0;
         this.arcAnimationSpeed = 40;
@@ -45,9 +46,10 @@ export default class retroLines {
 
 
 
-    setParameters({ lineWidth, spacing, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, backgroundColor, borderColor, colors, movementStyle }) { 
+    setParameters({ lineWidth, spacing, borderSize, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, backgroundColor, borderColor, colors, movementStyle }) { 
         this.lineWidth = lineWidth;
         this.spacing = spacing;
+        this.borderSize = borderSize;
         this.radius = radius;
         this.pad = pad;
         this.arcAnimationSpeed = arcAnimationSpeed;
@@ -58,7 +60,7 @@ export default class retroLines {
         this.colors = colors;
 
 
-        this.borderSize = this.spacing;
+ 
         this.movementStyle = movementStyle;
 
      
