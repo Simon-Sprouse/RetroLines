@@ -12,23 +12,22 @@ function RetroCanvas2() {
     ------------------------------------------
     */
 
-    const presetNumber = useRef(0);
-    const numberOfPresets = Object.keys(presets).length;
+    const [presetNumber, setPresetNumber] = useState(0);
+    const totalPresets = Object.keys(presets).length;
 
-    const backgroundColor = [42, 17, 100];
+    const backgroundColorRef = useRef([42, 17, 100]);
 
     const canvasRef = useRef(null);
-    const isRunningRef = useRef(false);
-    const isRunningRef2 = useRef(false);
+
+
+
+    const isRunningRefs = useState([]);
+    const linesArrayRef = useRef([]);
+
+
 
     
 
-    const linesRef = useRef(null);
-    // const linesRef2 = useRef(null);
-
-
-    
-    const parameters = presets[presetNumber.current];
 
     
     
@@ -38,15 +37,36 @@ function RetroCanvas2() {
 
     useEffect(() => { 
 
-        linesRef.current = new retroLines(canvasRef, isRunningRef);
-        linesRef.current.setParameters(parameters);
+
+        const parameters = presets[presetNumber];
+
+        linesArrayRef.current = [];
+        isRunningRefs.current = [];
+
+        for (let i = 0; i < 2; i++) { 
+
+            const isRunningRef = {current: false};
+            isRunningRefs.current.push(isRunningRef);
+
+            const newLines = new retroLines(canvasRef, isRunningRef);
+            newLines.setParameters(parameters.lineParams[0]);
+            linesArrayRef.current.push(newLines);
+        }
+
         
 
-        // linesRef2.current = new retroLines(canvasRef, isRunningRef2);
-        // linesRef2.current.setParameters(parameters2);
+        backgroundColorRef.current = parameters.canvasParams.backgroundColor;
+        
 
 
     }, []);
+
+    useEffect(() => { 
+        if (linesArrayRef.current.length > 0) {
+            const parameters = presets[presetNumber];
+            linesArrayRef.current.forEach(line => line.setParameters(parameters.lineParams[0]));
+        }
+    }, [presetNumber]);
 
     
 
@@ -54,8 +74,20 @@ function RetroCanvas2() {
     function resetBackground() { 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = hsvToHex(...backgroundColor);
+        ctx.fillStyle = hsvToHex(...backgroundColorRef.current);
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+
+
+    async function runAnimationLoop() {
+
+
+        linesArrayRef.current.forEach(lines => lines.startStopAnimation());
+
+
+
+
     }
 
 
@@ -100,13 +132,14 @@ function RetroCanvas2() {
                 window.location.reload();
             }
             else if (event.key == "Enter") { 
-                linesRef.current.startStopAnimation();
-                // linesRef2.current.startStopAnimation();
+
+                runAnimationLoop();
             }
             else if (event.key == "2") { 
-                presetNumber.current += 1;
-                linesRef.current.setParameters(presets[presetNumber.current % numberOfPresets]);
+                setPresetNumber(number => (number + 1) % totalPresets);
+                
             }
+
         }
 
 
@@ -180,3 +213,67 @@ export default RetroCanvas2;
     //     [36, 88, 98],
     //     [40, 51, 100],
     // ]);
+
+
+
+
+
+/*
+    "0": {
+        "lineWidth": 30,
+        "spacing": 100,
+        "borderSize": 100,
+        "radius": 30,
+        "pad": 0,
+        "arcAnimationSpeed": 60,
+        "lineAnimationSpeed": 60,
+        "colorSpeed": 0.0000,
+        "backgroundColor": [0, 0, 0], 
+        "borderColor": [0, 0, 0],
+        "colors": [
+            [358, 80, 69],
+            [12, 75, 95],
+            [26, 88, 98],
+            [36, 88, 98],
+            [40, 51, 100]
+        ],
+        "movementStyle": "random"
+    },
+
+    "1": {
+        "lineWidth": 20,
+        "spacing": 100,
+        "borderSize": 100,
+        "radius": 30,
+        "pad": 0,
+        "arcAnimationSpeed": 100,
+        "lineAnimationSpeed": 100,
+        "colorSpeed": 0.001,
+        "backgroundColor": [0, 0, 0], 
+        "borderColor": [0, 0, 0],
+        "colors": [
+            [0, 40, 100],
+            [0, 40, 100]
+        ],
+        "movementStyle": "random"
+    },
+
+    "2": {
+        "lineWidth": 30,
+        "spacing": 100,
+        "borderSize": 200,
+        "radius": 30,
+        "pad": 100,
+        "arcAnimationSpeed": 30,
+        "lineAnimationSpeed": 30,
+        "colorSpeed": 0.002,
+        "backgroundColor": [42, 17, 100], 
+        "borderColor": [0, 0, 0],
+        "colors": [
+            [250, 40, 100],
+            [250, 40, 100]
+        ],
+        "movementStyle": "random"
+    },
+
+    */

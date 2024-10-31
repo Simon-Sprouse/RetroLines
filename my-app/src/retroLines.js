@@ -27,7 +27,7 @@ export default class retroLines {
         this.arcAnimationSpeed = 40;
         this.lineAnimationSpeed = 40;
         this.colorSpeed = 0.0002;
-        this.backgroundColor = [0, 0, 0];
+
         this.borderColor = [0, 0, 0];
         this.colors = [
             [358, 80, 69],
@@ -41,12 +41,13 @@ export default class retroLines {
 
         this.borderSize = 70;
         this.movementStyle = "corner";
+        this.fadeStyle = "none";
 
     }
 
 
 
-    setParameters({ lineWidth, spacing, borderSize, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, backgroundColor, borderColor, colors, movementStyle }) { 
+    setParameters({ lineWidth, spacing, borderSize, radius, pad, arcAnimationSpeed, lineAnimationSpeed, colorSpeed, borderColor, colors, movementStyle, fadeStyle }) { 
         this.lineWidth = lineWidth;
         this.spacing = spacing;
         this.borderSize = borderSize;
@@ -55,13 +56,14 @@ export default class retroLines {
         this.arcAnimationSpeed = arcAnimationSpeed;
         this.lineAnimationSpeed = lineAnimationSpeed;
         this.colorSpeed = colorSpeed;
-        this.backgroundColor = backgroundColor;
+
         this.borderColor = borderColor;
         this.colors = colors;
 
 
  
         this.movementStyle = movementStyle;
+        this.fadeStyle = fadeStyle;
 
      
     }
@@ -745,31 +747,36 @@ export default class retroLines {
 
 
 
+        const fadeFunctions = {
+            "none": () => {},
+            "opacity": () => this.fadeByOpacity(0.01),
+            "rgb": () => this.fadeByRGB(1),
+        }
+        
+        const movementFunctions = {
+            "corner": () => this.cornerWalk(),
+            "random": () => this.randomWalk(),
+        }
+
+
+        const currentFadeFunction = fadeFunctions[this.fadeStyle];
+        const currentMovementFunction = movementFunctions[this.movementStyle];
+
+
         this.isRunningRef.current = !this.isRunningRef.current;
 
-    
 
-        if (this.movementStyle === "random") { 
-            while (true) { 
-                while (this.isRunningRef.current) {
-                    await this.randomWalk();
-                    // this.fadeByOpacityMultiple(0.99);
-                }
-                break;
-            }
-        }
-        else if (this.movementStyle === "corner") {
-            while (true) { 
-                while (this.isRunningRef.current) {
-                    await this.cornerWalk();
-                    // this.fadeByOpacityMultiple(0.99);
-                }
-                break;
-            }
+
+        while (this.isRunningRef.current) {
+            await currentMovementFunction();
+            currentFadeFunction();
         }
 
        
     }
+
+
+
 
 
 
